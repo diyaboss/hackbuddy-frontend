@@ -1,26 +1,46 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
+async function handleResponse(response) {
+  if (!response.ok) {
+    let errorMsg = `HTTP error! status: ${response.status}`;
+    try {
+      const errorData = await response.json();
+      if (errorData.error) errorMsg = errorData.error;
+    } catch {
+      // Not JSON or empty
+    }
+    throw new Error(errorMsg);
+  }
+  
+  try {
+    return await response.json();
+  } catch {
+    return null; // Empty or non-JSON success response
+  }
+}
 
 export async function fetchApi(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`;
   
   const headers = {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
     ...options.headers,
   };
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: 'initially_omitted_but_we_need_include_for_sessions_if_needed', 
-    // Wait, with sessions we must use 'include'
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
+    return await handleResponse(response);
+  } catch (err) {
+    if (err.name === 'TypeError' || err.message === 'Failed to fetch') {
+      throw new Error("Couldn't reach the HackBuddy server.");
+    }
+    throw err;
   }
-
-  return response.json();
 }
 
 export async function fetchApiWithAuth(endpoint, options = {}) {
@@ -28,19 +48,21 @@ export async function fetchApiWithAuth(endpoint, options = {}) {
   
   const headers = {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
     ...options.headers,
   };
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: 'include',
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
+    return await handleResponse(response);
+  } catch (err) {
+    if (err.name === 'TypeError' || err.message === 'Failed to fetch') {
+      throw new Error("Couldn't reach the HackBuddy server.");
+    }
+    throw err;
   }
-
-  return response.json();
 }
