@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { profileApi } from '../api/profile';
 import { authApi } from '../api/auth';
+import { AVATAR_OPTIONS } from '../data/avatars';
 
 const SKILL_OPTIONS = ['Frontend', 'Backend', 'Design', 'Mobile', 'AI/ML', 'Blockchain', 'Hardware', 'Product'];
 const GENDER_OPTIONS = ['Women', 'Men', 'Non-binary', 'Prefer not to say'];
-const AVATAR_OPTIONS = ['avatar-1.png', 'avatar-2.png', 'avatar-3.png', 'avatar-4.png', 'avatar-5.png', 'avatar-6.png'];
 
 export default function SetupForm({ user, setUser, showToast, onComplete }) {
   const navigate = useNavigate();
@@ -16,10 +16,10 @@ export default function SetupForm({ user, setUser, showToast, onComplete }) {
     branch: user?.branch || '',
     year: user?.year || '',
     gender: user?.gender || '',
-    teamSize: user?.teamSize || 4,
+    teamSize: user?.teamSize ?? user?.team_size ?? 4,
     bio: user?.bio || '',
-    workingStyle: user?.workingStyle || '',
-    avatar: user?.avatar || 'raccoon',
+    workingStyle: user?.workingStyle ?? user?.working_style ?? '',
+    avatar: user?.avatar || 'avatar-1',
     skills: user?.skills || [],
     lookingFor: user?.lookingFor || []
   });
@@ -88,7 +88,7 @@ export default function SetupForm({ user, setUser, showToast, onComplete }) {
               <p className="metadata" style={{ marginBottom: '1rem' }}>CHOOSE AN IDENTITY</p>
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 {AVATAR_OPTIONS.map(a => (
-                  <img key={a} src={`/assets/${a}`} alt={a} onClick={() => setFormData({ ...formData, avatar: a.replace('.png', '') })} style={{ width: '80px', height: '80px', cursor: 'pointer', border: formData.avatar === a.replace('.png', '') ? '2px solid var(--lime-400)' : '2px solid transparent', filter: 'grayscale(1)' }} />
+                  <img key={a.id} src={a.src} alt={a.label} onClick={() => setFormData({ ...formData, avatar: a.id })} style={{ width: '80px', height: '80px', cursor: 'pointer', border: formData.avatar === a.id ? '2px solid var(--lime-400)' : '2px solid transparent', filter: 'grayscale(1)' }} />
                 ))}
               </div>
             </div>
