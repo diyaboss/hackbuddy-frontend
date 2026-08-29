@@ -24,7 +24,6 @@ export async function fetchApi(endpoint, options = {}) {
   
   const headers = {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
     ...options.headers,
   };
 
@@ -48,7 +47,6 @@ export async function fetchApiWithAuth(endpoint, options = {}) {
   
   const headers = {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
     ...options.headers,
   };
 
