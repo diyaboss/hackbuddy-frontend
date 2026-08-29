@@ -26,8 +26,6 @@ export default function HomePage({ user }) {
           setScrollY(window.scrollY);
           if (processRef.current) {
             const rect = processRef.current.getBoundingClientRect();
-            // rect.top is 0 when the sticky section starts
-            // rect.bottom is window.innerHeight when it ends
             const totalScroll = rect.height - window.innerHeight;
             let progress = -rect.top / totalScroll;
             progress = Math.max(0, Math.min(1, progress));
@@ -71,109 +69,113 @@ export default function HomePage({ user }) {
       {/* SCENE 1 — OPEN SLOT */}
       <section className="home-scene home-hero scene-dark">
         <div className="editorial-grid">
-          <p className="metadata" style={{ gridColumn: '1 / -1', marginBottom: '2rem' }}>
+          <p className="metadata hero-metadata-top">
             FIND WHAT YOUR TEAM IS MISSING.
           </p>
-          <h1 className="display-hero" style={{ fontSize: 'clamp(5rem, 18vw, 22rem)', transform: prefersReducedMotion ? 'none' : `translateY(${scrollY * 0.2}px)` }}>HACKBUDDY</h1>
-          <div style={{ position: 'absolute', top: '20vh', right: '10vw', zIndex: 1, transform: prefersReducedMotion ? 'none' : `translateY(${scrollY * -0.1}px)` }}>
-            <CableConnector style={{ transform: 'scale(1.5) rotate(15deg)' }} />
+          <h1 className="display-hero hero-title" style={{ transform: prefersReducedMotion ? 'none' : `translateY(${scrollY * 0.15}px)` }}>
+            HACKBUDDY
+          </h1>
+          <div className="hero-obj" style={{ transform: prefersReducedMotion ? 'none' : `translateY(${scrollY * -0.05}px)` }}>
+            <CableConnector />
           </div>
-          <p className="metadata" style={{ position: 'absolute', bottom: 'var(--outer-margin)', right: 'var(--outer-margin)' }}>
+          <p className="metadata hero-metadata-bottom">
             01 / 07
           </p>
         </div>
       </section>
 
       {/* SCENE 2 — MANIFESTO */}
-      <section className="home-scene home-manifesto scene-light">
+      <section className="home-scene home-manifesto scene-paper">
         <div className="editorial-grid">
-          <div className="text-block" style={{ gridColumn: '1 / 10' }}>
-            <h2 className="display-xl" style={{ color: 'var(--ink-950)' }}>
+          <div className="manifesto-text-block">
+            <h2 className="display-xl manifesto-title">
               MOST PLATFORMS<br/>HELP YOU FIND<br/>PEOPLE.<br/>
               <span style={{ color: 'var(--wine-700)' }}>WE HELP YOU FIND<br/>WHAT YOU'RE MISSING.</span>
             </h2>
-          </div>
-          <div className="obj-block" style={{ gridColumn: '12 / -1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <PuzzleSlot style={{ transform: 'scale(2) rotate(-10deg)', opacity: 0.8 }} />
           </div>
         </div>
       </section>
 
       {/* SCENE 3 — MATCH */}
-      <section className="home-scene scene-dark" style={{ justifyContent: 'center', position: 'relative' }}>
-        <div className="editorial-grid" style={{ width: '100%', alignItems: 'center' }}>
-          <p className="metadata" style={{ position: 'absolute', top: '10vh', left: 'var(--outer-margin)' }}>
+      <section className="home-scene match-scene scene-dark">
+        <div className="editorial-grid">
+          <p className="metadata match-meta-top">
             NOT SIMILAR. COMPLEMENTARY.
           </p>
-          <h2 className="display-hero" style={{ gridColumn: '1 / -1', fontSize: 'clamp(6rem, 24vw, 28rem)', color: 'var(--cream-50)', zIndex: 2 }}>MATCH</h2>
-          <div style={{ position: 'absolute', left: '40vw', top: '30vh', zIndex: 1, opacity: 0.4 }}>
-             <FloatingTerminal style={{ transform: 'scale(1.8) rotate(-5deg)' }} />
+          <h2 className="display-hero match-title">MATCH</h2>
+          <div className="match-obj">
+             <FloatingTerminal />
           </div>
-          <p className="metadata" style={{ position: 'absolute', bottom: '10vh', right: 'var(--outer-margin)', color: 'var(--stone-500)', textAlign: 'right' }}>
+          <p className="metadata match-meta-bottom">
             CAPABILITY ROULETTE<br/>IS FOR AMATEURS.
           </p>
         </div>
       </section>
 
       {/* SCENE 4 — COMPLEMENT */}
-      <section className="home-scene scene-light">
-        <div className="editorial-grid" style={{ alignItems: 'center' }}>
-          <div style={{ gridColumn: '1 / 8' }}>
-            <h2 className="display-xl" style={{ color: 'var(--ink-950)' }}>
-              YOU BUILD INTERFACES.<br/>
-              THEY BUILD SYSTEMS.<br/>
-              THAT'S USEFUL.
+      <section className="home-scene complement-scene scene-light">
+        <div className="editorial-grid">
+          <div className="complement-text-block">
+            <h2 className="display-xl complement-title">
+              YOU BUILD<br/>INTERFACES.<br/>
+              THEY BUILD<br/>SYSTEMS.<br/>
+              <span style={{ color: 'var(--wine-700)' }}>THAT'S USEFUL.</span>
             </h2>
           </div>
-          <div style={{ gridColumn: '10 / 12', display: 'flex', justifyContent: 'center' }}>
-             <CableConnector style={{ transform: 'rotate(90deg) scale(1.5)' }} />
-          </div>
-          <div style={{ gridColumn: '12 / -1' }}>
-            <p className="metadata" style={{ color: 'var(--ink-950)', marginBottom: '1rem' }}>YOU NEED BACKEND</p>
-            <p className="metadata" style={{ color: 'var(--wine-700)' }}>THEY BRING BACKEND</p>
+          <div className="complement-visual-block">
+            <div>
+              <p className="metadata" style={{ color: 'var(--stone-500)', marginBottom: '0.5rem' }}>YOU NEED</p>
+              <h3 className="display-lg">BACKEND</h3>
+            </div>
+            <CableConnector style={{ transform: 'rotate(90deg)' }} />
+            <div>
+              <p className="metadata" style={{ color: 'var(--wine-700)', marginBottom: '0.5rem' }}>THEY BRING</p>
+              <h3 className="display-lg" style={{ color: 'var(--wine-700)' }}>BACKEND</h3>
+            </div>
           </div>
         </div>
       </section>
 
       {/* SCENE 5 — CAPABILITY SHOWCASE */}
-      <section className="home-scene scene-dark">
-        <div className="editorial-grid" style={{ alignContent: 'center' }}>
-          <div style={{ gridColumn: '1 / 7' }}>
-            <h3 className="display-lg" style={{ color: 'var(--lime-400)', marginBottom: '2rem' }}>01<br/>FRONTEND</h3>
-            <div style={{ marginBottom: '3rem' }}>
-              <p className="metadata" style={{ marginBottom: '1rem', color: 'var(--cream-50)' }}>BRINGS</p>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <section className="home-scene showcase-scene scene-dark">
+        <div className="editorial-grid">
+          <div className="showcase-line-v"></div>
+          <div className="showcase-line-h"></div>
+
+          <div className="showcase-profile-1">
+            <h3 className="display-lg showcase-title-1">01<br/>FRONTEND</h3>
+            <div className="showcase-section">
+              <p className="metadata showcase-meta" style={{ color: 'var(--cream-50)' }}>BRINGS</p>
+              <div className="showcase-tags">
                 <span className="skill-tag skill-brings">React</span>
                 <span className="skill-tag skill-brings">Design Systems</span>
                 <span className="skill-tag skill-brings">Motion</span>
               </div>
             </div>
             <div>
-              <p className="metadata" style={{ marginBottom: '1rem', color: 'var(--cream-50)' }}>NEEDS</p>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <span className="skill-tag skill-needs">APIs</span>
-                <span className="skill-tag skill-needs">Data</span>
-                <span className="skill-tag skill-needs">Infrastructure</span>
+              <p className="metadata showcase-meta" style={{ color: 'var(--cream-50)' }}>NEEDS</p>
+              <div className="showcase-tags">
+                <span className="skill-tag skill-needs" style={{ borderColor: 'var(--lime-400)', color: 'var(--lime-400)' }}>APIs</span>
+                <span className="skill-tag skill-needs" style={{ borderColor: 'var(--lime-400)', color: 'var(--lime-400)' }}>Data</span>
               </div>
             </div>
           </div>
           
-          <div style={{ gridColumn: '9 / -1' }}>
-            <h3 className="display-lg" style={{ color: 'var(--lime-400)', marginBottom: '2rem' }}>02<br/>BACKEND</h3>
-            <div style={{ marginBottom: '3rem' }}>
-              <p className="metadata" style={{ marginBottom: '1rem', color: 'var(--cream-50)' }}>BRINGS</p>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <span className="skill-tag skill-brings">Node</span>
-                <span className="skill-tag skill-brings">Postgres</span>
-                <span className="skill-tag skill-brings">APIs</span>
+          <div className="showcase-profile-2">
+            <h3 className="display-lg showcase-title-2">02<br/>BACKEND</h3>
+            <div className="showcase-section">
+              <p className="metadata showcase-meta" style={{ color: 'var(--lime-400)' }}>BRINGS</p>
+              <div className="showcase-tags">
+                <span className="skill-tag skill-brings" style={{ background: 'var(--lime-400)', color: 'var(--ink-950)' }}>Node</span>
+                <span className="skill-tag skill-brings" style={{ background: 'var(--lime-400)', color: 'var(--ink-950)' }}>Postgres</span>
+                <span className="skill-tag skill-brings" style={{ background: 'var(--lime-400)', color: 'var(--ink-950)' }}>APIs</span>
               </div>
             </div>
             <div>
-              <p className="metadata" style={{ marginBottom: '1rem', color: 'var(--cream-50)' }}>NEEDS</p>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <p className="metadata showcase-meta" style={{ color: 'var(--cream-50)' }}>NEEDS</p>
+              <div className="showcase-tags">
                 <span className="skill-tag skill-needs">UI</span>
                 <span className="skill-tag skill-needs">Design</span>
-                <span className="skill-tag skill-needs">Pitch</span>
               </div>
             </div>
           </div>
@@ -181,22 +183,22 @@ export default function HomePage({ user }) {
       </section>
 
       {/* SCENE 6 — PROCESS */}
-      <section id="how-it-works" ref={processRef} className="scene-light" style={{ position: 'relative', height: prefersReducedMotion ? 'auto' : '300vh', minHeight: '100vh' }}>
-        <div style={{ position: prefersReducedMotion ? 'relative' : 'sticky', top: 0, height: prefersReducedMotion ? 'auto' : '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden', padding: prefersReducedMotion ? '10vh 0' : 0 }}>
-          <div className="editorial-grid" style={{ width: '100%', gap: prefersReducedMotion ? '4rem' : 'var(--gutter)' }}>
-            <div style={{ gridColumn: '1 / 6', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: getProcessOpacity(0), transition: 'opacity 0.3s' }}>FIND.</h2>
-              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: getProcessOpacity(1), transition: 'opacity 0.3s' }}>REQUEST.</h2>
-              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: getProcessOpacity(2), transition: 'opacity 0.3s' }}>MATCH.</h2>
-              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: getProcessOpacity(3), transition: 'opacity 0.3s' }}>BUILD.</h2>
+      <section id="how-it-works" ref={processRef} className="process-scene scene-paper" style={{ height: prefersReducedMotion ? 'auto' : '300vh', minHeight: '100vh' }}>
+        <div className="process-sticky" style={{ position: prefersReducedMotion ? 'relative' : 'sticky', top: 0, height: prefersReducedMotion ? 'auto' : '100vh', padding: prefersReducedMotion ? '10vh 0' : 0 }}>
+          <div className="editorial-grid process-grid" style={{ gap: prefersReducedMotion ? '4rem' : 'var(--gutter)' }}>
+            <div className="process-text-block">
+              <h2 className="display-hero process-word" style={{ opacity: getProcessOpacity(0) }}>FIND.</h2>
+              <h2 className="display-hero process-word" style={{ opacity: getProcessOpacity(1) }}>REQUEST.</h2>
+              <h2 className="display-hero process-word" style={{ opacity: getProcessOpacity(2) }}>MATCH.</h2>
+              <h2 className="display-hero process-word" style={{ opacity: getProcessOpacity(3) }}>BUILD.</h2>
             </div>
-            <div style={{ gridColumn: '8 / -1', alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <PuzzleSlot style={{ transform: prefersReducedMotion ? 'none' : `rotate(${scrollY * 0.1}deg)`, transition: 'transform 0.1s ease-out' }} />
-              <p className="metadata" style={{ color: 'var(--wine-700)', fontSize: '1.2rem' }}>
+            <div className="process-visual-block">
+              <PuzzleSlot stage={processStageIndex} style={{ transform: 'scale(1.4)' }} />
+              <p className="body-editorial process-desc">
                 {processStageIndex === 0 && 'Locate the exact skills missing from your team.'}
-                {processStageIndex === 1 && 'Send a direct, private request.'}
+                {processStageIndex === 1 && 'Send a direct, private request across the gap.'}
                 {processStageIndex === 2 && 'Confirm the match and unlock contact details.'}
-                {processStageIndex === 3 && 'Get to work.'}
+                {processStageIndex === 3 && 'Get to work on what matters.'}
               </p>
             </div>
           </div>
@@ -204,18 +206,20 @@ export default function HomePage({ user }) {
       </section>
 
       {/* SCENE 7 — FINAL CTA */}
-      <section className="home-scene scene-dark">
-        <div className="editorial-grid" style={{ alignContent: 'center', width: '100%' }}>
-          <h2 className="display-xl" style={{ gridColumn: '1 / -1', marginBottom: '4rem', color: 'var(--cream-50)' }}>
-            DON'T<br/>BUILD<br/>ALONE.
-          </h2>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <button className="btn-editorial" onClick={handleStart}>
+      <section className="home-scene cta-scene scene-dark">
+        <div className="editorial-grid">
+          <div className="cta-title-block">
+            <h2 className="display-hero cta-title">
+              DON'T<br/>BUILD<br/><span style={{ color: 'var(--lime-400)' }}>ALONE.</span>
+            </h2>
+          </div>
+          <div className="cta-action-block">
+            <p className="metadata" style={{ marginBottom: '2rem', color: 'var(--stone-500)', fontSize: '0.85rem' }}>
+              YOUR TEAM HAS A GAP. GOOD. FILL IT.
+            </p>
+            <button className="btn-editorial cta-btn" onClick={handleStart}>
               START MATCHING →
             </button>
-            <p className="metadata" style={{ marginTop: '2rem', color: 'var(--stone-500)' }}>
-              YOUR TEAM HAS A GAP. GOOD.
-            </p>
           </div>
         </div>
       </section>
