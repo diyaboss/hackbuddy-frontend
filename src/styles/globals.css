@@ -1,21 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..800&family=Oswald:wght@500;700&family=Playfair+Display:ital,wght@0,400..800;1,400..800&display=swap');
-
 :root {
-  --ink: #0a0b0a;
-  --ink-soft: #171814;
-  --paper: #f2eee5;
-  --paper-dim: #d4cec2;
-  --maroon: #6d1234;
-  --maroon-dark: #43091f;
-  --accent: #dcff91;
-  --pink: #ee9ab6;
-  --gold: #efc66e;
-  --line: rgba(242, 238, 229, 0.15);
-  --muted: #8f8b82;
-
-  --font-ui: 'DM Sans', system-ui, sans-serif;
-  --font-display: 'Oswald', sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
+  --ink: var(--ink-950);
+  --ink-soft: var(--ink-900);
+  --paper: var(--cream-50);
+  --paper-dim: var(--cream-100);
+  --maroon: var(--wine-700);
+  --maroon-dark: var(--ink-950);
+  --accent: var(--lime-400);
+  --pink: var(--wine-700);
+  --gold: var(--lime-400);
+  --line: var(--hairline-dark);
+  --muted: var(--stone-500);
 }
 
 * {
@@ -24,18 +18,7 @@
   padding: 0;
 }
 
-html {
-  background: var(--ink);
-  scroll-behavior: smooth;
-}
-
-html,
-body {
-  min-height: 100%;
-  color: var(--paper);
-  font-family: var(--font-ui);
-  -webkit-font-smoothing: antialiased;
-}
+/* Base styles deferred to index.css */
 
 button,
 input,
