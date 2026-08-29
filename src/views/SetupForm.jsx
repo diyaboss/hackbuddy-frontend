@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { profileApi } from '../api/profile';
+import { authApi } from '../api/auth';
 
 const SKILL_OPTIONS = ['Frontend', 'Backend', 'Design', 'Mobile', 'AI/ML', 'Blockchain', 'Hardware', 'Product'];
-const GENDER_OPTIONS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+const GENDER_OPTIONS = ['Women', 'Men', 'Non-binary', 'Prefer not to say'];
 const AVATAR_OPTIONS = ['avatar-1.png', 'avatar-2.png', 'avatar-3.png', 'avatar-4.png', 'avatar-5.png', 'avatar-6.png'];
 
-export default function SetupForm({ user, setUser, showToast }) {
+export default function SetupForm({ user, setUser, showToast, onComplete }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
@@ -18,7 +19,7 @@ export default function SetupForm({ user, setUser, showToast }) {
     teamSize: user?.teamSize || 4,
     bio: user?.bio || '',
     workingStyle: user?.workingStyle || '',
-    avatar: user?.avatar || AVATAR_OPTIONS[0],
+    avatar: user?.avatar || 'raccoon',
     skills: user?.skills || [],
     lookingFor: user?.lookingFor || []
   });
@@ -38,11 +39,37 @@ export default function SetupForm({ user, setUser, showToast }) {
       return;
     }
     
+    if (formData.skills.length < 2 || formData.skills.length > 4) {
+      showToast('Please select 2-4 skills you bring.');
+      return;
+    }
+    
+    if (formData.lookingFor.length < 2 || formData.lookingFor.length > 4) {
+      showToast('Please select 2-4 skills you need.');
+      return;
+    }
+    
     try {
       setLoading(true);
-      const data = await profileApi.updateMe(formData);
-      setUser(data.user);
-      navigate('/discover');
+      await profileApi.updateMe({
+        name: formData.name,
+        branch: formData.branch,
+        year: formData.year,
+        gender: formData.gender,
+        team_size: formData.teamSize,
+        bio: formData.bio,
+        avatar: formData.avatar,
+        working_style: formData.workingStyle,
+        skills: formData.skills,
+        lookingFor: formData.lookingFor
+      });
+      const fresh = await authApi.me();
+      setUser(fresh.user);
+      if (onComplete) {
+        onComplete(fresh.user);
+      } else {
+        navigate('/discover');
+      }
     } catch (err) {
       showToast(err.message || 'Failed to save profile');
     } finally {
@@ -61,7 +88,7 @@ export default function SetupForm({ user, setUser, showToast }) {
               <p className="metadata" style={{ marginBottom: '1rem' }}>CHOOSE AN IDENTITY</p>
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 {AVATAR_OPTIONS.map(a => (
-                  <img key={a} src={`/assets/${a}`} alt={a} onClick={() => setFormData({ ...formData, avatar: a })} style={{ width: '80px', height: '80px', cursor: 'pointer', border: formData.avatar === a ? '2px solid var(--lime-400)' : '2px solid transparent', filter: 'grayscale(1)' }} />
+                  <img key={a} src={`/assets/${a}`} alt={a} onClick={() => setFormData({ ...formData, avatar: a.replace('.png', '') })} style={{ width: '80px', height: '80px', cursor: 'pointer', border: formData.avatar === a.replace('.png', '') ? '2px solid var(--lime-400)' : '2px solid transparent', filter: 'grayscale(1)' }} />
                 ))}
               </div>
             </div>
@@ -81,7 +108,7 @@ export default function SetupForm({ user, setUser, showToast }) {
             <input className="editorial-input" style={{ marginTop: '2rem' }} placeholder="YEAR / HOW LONG HAVE YOU BEEN AT IT?" value={formData.year} onChange={e => setFormData({ ...formData, year: e.target.value })} />
             
             <div style={{ marginTop: '4rem' }}>
-              <p className="metadata" style={{ marginBottom: '1rem' }}>BRINGS / YOUR USEFUL WEAPONS</p>
+              <p className="metadata" style={{ marginBottom: '1rem' }}>BRINGS / YOUR USEFUL WEAPONS (Pick 2-4)</p>
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 {SKILL_OPTIONS.map(s => (
                   <button key={s} className={`skill-tag ${formData.skills.includes(s) ? 'skill-brings' : ''}`} style={{ borderColor: 'var(--ink-950)', color: formData.skills.includes(s) ? 'var(--cream-50)' : 'inherit', background: formData.skills.includes(s) ? 'var(--ink-950)' : 'transparent' }} onClick={() => toggleArrayItem('skills', s)}>{s}</button>
@@ -95,7 +122,7 @@ export default function SetupForm({ user, setUser, showToast }) {
           <div className="setup-step">
             <h2 className="display-lg">WHAT ARE YOU MISSING?</h2>
             <div style={{ marginTop: '4rem' }}>
-              <p className="metadata" style={{ marginBottom: '1rem' }}>NEEDS / THE PIECES YOU WANT BESIDE YOU</p>
+              <p className="metadata" style={{ marginBottom: '1rem' }}>NEEDS / THE PIECES YOU WANT BESIDE YOU (Pick 2-4)</p>
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 {SKILL_OPTIONS.map(s => (
                   <button key={s} className={`skill-tag ${formData.lookingFor.includes(s) ? 'skill-needs' : ''}`} style={{ borderColor: formData.lookingFor.includes(s) ? 'var(--wine-700)' : 'var(--ink-950)', color: formData.lookingFor.includes(s) ? 'var(--wine-700)' : 'inherit' }} onClick={() => toggleArrayItem('lookingFor', s)}>{s}</button>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { requestsApi } from '../api/requests';
+import AnimalAvatar from '../components/AnimalAvatar';
 
 export default function RequestsView({ user, showToast }) {
   const [incoming, setIncoming] = useState([]);
@@ -65,9 +66,11 @@ export default function RequestsView({ user, showToast }) {
             <div style={{ marginBottom: '6rem' }}>
               <p className="metadata" style={{ marginBottom: '2rem' }}>INCOMING</p>
               {incoming.map((r, i) => (
-                <div key={r.requestId} className="request-row" style={{ opacity: r.status !== 'pending' ? 0.5 : 1 }}>
+                <div key={r.requestId} className="request-row">
                   <p className="metadata">0{i + 1}</p>
-                  <img className="request-avatar" src={`/assets/${r.sender?.avatar || 'avatar-1.png'}`} alt={r.sender?.name} />
+                  <div style={{ width: '80px' }}>
+                    <AnimalAvatar animal={r.sender?.avatar || 'raccoon'} label={r.sender?.name} />
+                  </div>
                   <div>
                     <h3 className="display-lg" style={{ fontSize: '2rem' }}>{r.sender?.name}</h3>
                     <p className="metadata">{r.sender?.branch} • {r.sender?.year}</p>
@@ -77,14 +80,8 @@ export default function RequestsView({ user, showToast }) {
                     <p className="metadata">SCORE: {r.sender?.complementScore}%</p>
                   </div>
                   <div className="request-actions">
-                    {r.status === 'pending' ? (
-                      <>
-                        <button className="btn-editorial" onClick={() => handleAccept(r.requestId)}>ACCEPT</button>
-                        <button className="btn-outline" style={{ padding: '8px' }} onClick={() => handleDecline(r.requestId)}>DECLINE</button>
-                      </>
-                    ) : (
-                      <p className="metadata">{r.status}</p>
-                    )}
+                    <button className="btn-editorial" onClick={() => handleAccept(r.requestId)}>ACCEPT</button>
+                    <button className="btn-outline" style={{ padding: '8px' }} onClick={() => handleDecline(r.requestId)}>DECLINE</button>
                   </div>
                 </div>
               ))}
@@ -95,14 +92,16 @@ export default function RequestsView({ user, showToast }) {
             <div>
               <p className="metadata" style={{ marginBottom: '2rem' }}>OUTGOING (WAITING)</p>
               {outgoing.map((r, i) => (
-                <div key={r.requestId} className="request-row" style={{ opacity: r.status !== 'pending' ? 0.5 : 1 }}>
+                <div key={r.requestId} className="request-row" style={{ opacity: 0.5 }}>
                   <p className="metadata">0{i + 1}</p>
-                  <img className="request-avatar" src={`/assets/${r.receiver?.avatar || 'avatar-2.png'}`} alt={r.receiver?.name} />
+                  <div style={{ width: '80px' }}>
+                    <AnimalAvatar animal={r.receiver?.avatar || 'raccoon'} label={r.receiver?.name} />
+                  </div>
                   <div>
                     <h3 className="display-lg" style={{ fontSize: '2rem' }}>{r.receiver?.name}</h3>
                   </div>
                   <div>
-                    <p className="metadata" style={{ color: 'var(--wine-700)' }}>{r.status}</p>
+                    <p className="metadata" style={{ color: 'var(--wine-700)' }}>PENDING</p>
                   </div>
                   <div />
                 </div>

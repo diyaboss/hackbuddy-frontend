@@ -2,14 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { discoverApi } from '../api/discover';
 import { profileApi } from '../api/profile';
 import { requestsApi } from '../api/requests';
+import ConfirmModal from '../components/ConfirmModal';
+import AnimalAvatar from '../components/AnimalAvatar';
 
-export default function DiscoverView({ user, showToast }) {
+export default function DiscoverView({ user, setUser, showToast }) {
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matchingStatus, setMatchingStatus] = useState(user?.matching_status || 'active');
-  const [genderFilter, setGenderFilter] = useState('All');
+  const [genderFilter, setGenderFilter] = useState('Everyone');
   const [requestSending, setRequestSending] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState(null);
 
   useEffect(() => {
     if (matchingStatus === 'active') {
@@ -38,9 +42,14 @@ export default function DiscoverView({ user, showToast }) {
 
   const updateStatus = async (newStatus) => {
     try {
-      const res = await profileApi.updateStatus(newStatus);
-      setMatchingStatus(res.matching_status);
-      showToast(`Status updated to ${res.matching_status}`);
+      await profileApi.updateStatus(newStatus);
+      setMatchingStatus(newStatus);
+      if (setUser) {
+        setUser(current => ({ ...current, matching_status: newStatus }));
+      }
+      showToast(`Status updated`);
+      setShowConfirm(false);
+      setPendingStatus(null);
     } catch (err) {
       showToast(err.message || 'Failed to update status');
     }
@@ -59,9 +68,25 @@ export default function DiscoverView({ user, showToast }) {
     }
   };
 
+  const renderConfirm = () => {
+    if (!showConfirm) return null;
+    return (
+      <ConfirmModal
+        title="TEAM COMPLETE?"
+        confirmText="I'VE FOUND MY TEAM"
+        cancelText="KEEP MATCHING"
+        onConfirm={() => updateStatus(pendingStatus)}
+        onCancel={() => { setShowConfirm(false); setPendingStatus(null); }}
+      >
+        You'll stop appearing in Discover and won't receive new Team Up requests. Your existing matches and shared contacts stay available.
+      </ConfirmModal>
+    );
+  };
+
   if (matchingStatus === 'team_found' || matchingStatus === 'paused') {
     return (
       <div className="discover-scene scene-dark full-bleed">
+        {renderConfirm()}
         <div className="editorial-grid">
           <h1 className="display-xl" style={{ gridColumn: '1 / -1' }}>
             {matchingStatus === 'team_found' ? 'TEAM COMPLETE' : 'PAUSED'}
@@ -83,6 +108,7 @@ export default function DiscoverView({ user, showToast }) {
 
   return (
     <div className="discover-scene scene-dark full-bleed">
+      {renderConfirm()}
       <div className="editorial-grid discover-header">
         <h1 className="display-lg" style={{ gridColumn: '1 / 6' }}>
           FIND THE<br/>OTHER SIDE.
@@ -94,13 +120,15 @@ export default function DiscoverView({ user, showToast }) {
             value={genderFilter}
             onChange={(e) => setGenderFilter(e.target.value)}
           >
-            <option value="All">ALL GENDERS</option>
-            <option value="Female">FEMALE ONLY</option>
-            <option value="Male">MALE ONLY</option>
+            <option value="Everyone">ALL GENDERS</option>
+            <option value="Women">WOMEN ONLY</option>
+            <option value="Men">MEN ONLY</option>
+            <option value="Non-binary">NON-BINARY</option>
+            <option value="Prefer not to say">PREFER NOT TO SAY</option>
           </select>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button className="btn-outline" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => updateStatus('paused')}>PAUSE MATCHING</button>
-            <button className="btn-outline" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { if(window.confirm('Mark as Team Found?')) updateStatus('team_found'); }}>TEAM FOUND</button>
+            <button className="btn-outline" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { setPendingStatus('team_found'); setShowConfirm(true); }}>TEAM FOUND</button>
           </div>
         </div>
         <p className="body-editorial" style={{ gridColumn: '1 / 6', marginTop: '2rem', color: 'var(--stone-500)' }}>
@@ -118,8 +146,8 @@ export default function DiscoverView({ user, showToast }) {
             </div>
           ) : (
             <div className="talent-spread">
-              <div className="talent-portrait">
-                <img src={`/assets/${participants[currentIndex].avatar || 'avatar-1.png'}`} alt={participants[currentIndex].name} />
+              <div className="talent-portrait" style={{ width: '120px' }}>
+                <AnimalAvatar animal={participants[currentIndex].avatar || 'raccoon'} label={participants[currentIndex].name} />
               </div>
               <div className="talent-info">
                 <div>

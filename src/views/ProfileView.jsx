@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { profileApi } from '../api/profile';
+import SetupForm from './SetupForm';
+import AnimalAvatar from '../components/AnimalAvatar';
 
 export default function ProfileView({ user, setUser, showToast }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -23,8 +26,11 @@ export default function ProfileView({ user, setUser, showToast }) {
   const handleToggleStatus = async () => {
     try {
       const newStatus = profile.matching_status === 'active' ? 'paused' : 'active';
-      const data = await profileApi.updateStatus(newStatus);
-      setProfile({ ...profile, matching_status: data.matching_status });
+      await profileApi.updateStatus(newStatus);
+      setProfile({ ...profile, matching_status: newStatus });
+      if (setUser) {
+        setUser(current => ({ ...current, matching_status: newStatus }));
+      }
       showToast(`Matching status is now ${newStatus}`);
     } catch (err) {
       showToast(err.message || 'Failed to update status');
@@ -33,17 +39,46 @@ export default function ProfileView({ user, setUser, showToast }) {
 
   if (loading || !profile) return <div className="scene-light full-bleed" style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p className="metadata">LOADING PROFILE...</p></div>;
 
+  if (isEditing) {
+    return (
+      <div style={{ position: 'relative' }}>
+        <button 
+          className="btn-outline" 
+          style={{ position: 'absolute', top: '120px', right: '40px', zIndex: 100 }}
+          onClick={() => setIsEditing(false)}
+        >
+          CANCEL EDIT
+        </button>
+        <SetupForm 
+          user={profile} 
+          setUser={setUser} 
+          showToast={showToast} 
+          onComplete={() => {
+            setIsEditing(false);
+            fetchProfile();
+          }} 
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="scene-light full-bleed" style={{ minHeight: '100svh', paddingTop: '120px', paddingBottom: '120px' }}>
       <div className="editorial-grid">
-        <div style={{ gridColumn: '1 / -1', marginBottom: '8vh' }}>
-          <h1 className="display-xl">YOUR PROFILE</h1>
-          <p className="body-editorial" style={{ marginTop: '2rem' }}>
-            {profile.name} • {profile.branch} • {profile.year}
-          </p>
+        <div style={{ gridColumn: '1 / -1', marginBottom: '8vh', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h1 className="display-xl">YOUR PROFILE</h1>
+            <p className="body-editorial" style={{ marginTop: '2rem' }}>
+              {profile.name} • {profile.branch} • {profile.year}
+            </p>
+          </div>
+          <button className="btn-outline" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => setIsEditing(true)}>EDIT PROFILE</button>
         </div>
 
         <div style={{ gridColumn: '1 / 6' }}>
+          <div style={{ marginBottom: '4rem', width: '120px' }}>
+            <AnimalAvatar animal={profile.avatar || 'raccoon'} label={profile.name} />
+          </div>
           <h2 className="display-lg">CAPABILITIES</h2>
           <div style={{ marginTop: '2rem' }}>
             <p className="metadata" style={{ marginBottom: '1rem' }}>BRINGS</p>
