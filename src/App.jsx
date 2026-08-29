@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom'
-import TopBar from './components/TopBar'
+import EditorialNav from './components/EditorialNav'
 import Toast from './components/Toast'
 import HomePage from './views/HomePage'
 import SetupForm from './views/SetupForm'
@@ -51,7 +51,7 @@ function App() {
   }
 
   if (loading) {
-    return <div className="loading-screen">Loading HackBuddy...</div>
+    return <div className="scene-dark full-bleed" style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)' }}>Loading HackBuddy...</div>
   }
 
   // Routing Guards
@@ -86,8 +86,8 @@ function App() {
 
   return (
     <main className="app-shell">
-      {location.pathname !== '/' && location.pathname !== '/auth' && (
-        <TopBar user={user} onLogout={handleLogout} />
+      {location.pathname !== '/auth' && (
+        <EditorialNav user={user} onLogout={handleLogout} />
       )}
 
       <Routes>

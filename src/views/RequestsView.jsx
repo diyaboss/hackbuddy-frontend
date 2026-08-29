@@ -1,112 +1,116 @@
-import React, { useState, useEffect } from 'react'
-import { requestsApi } from '../api/requests'
-import AnimalAvatar from '../components/AnimalAvatar'
+import React, { useState, useEffect } from 'react';
+import { requestsApi } from '../api/requests';
 
-export default function RequestsView({ showToast }) {
-  const [requests, setRequests] = useState([])
-  const [loading, setLoading] = useState(true)
+export default function RequestsView({ user, showToast }) {
+  const [incoming, setIncoming] = useState([]);
+  const [outgoing, setOutgoing] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    requestsApi.getIncoming()
-      .then(data => setRequests(data))
-      .catch(() => showToast('Failed to load requests'))
-      .finally(() => setLoading(false))
-  }, [])
+    fetchRequests();
+  }, []);
 
-  const handleAction = async (id, action) => {
+  const fetchRequests = async () => {
     try {
-      if (action === 'accept') {
-        await requestsApi.acceptRequest(id)
-        showToast('Request accepted! They are now in your Matches.')
-      } else {
-        await requestsApi.declineRequest(id)
-        showToast('Request declined.')
-      }
-      setRequests(prev => prev.filter(r => r.requestId !== id))
+      const [inc, out] = await Promise.all([
+        requestsApi.getIncoming(),
+        requestsApi.getOutgoing()
+      ]);
+      setIncoming(inc);
+      setOutgoing(out);
     } catch (err) {
-      showToast(err.message || `Failed to ${action} request`)
+      showToast('Failed to load requests');
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  if (loading) return <div>Loading...</div>
+  const handleAccept = async (id) => {
+    try {
+      await requestsApi.acceptRequest(id);
+      showToast('Accepted! Check your Matches.');
+      fetchRequests();
+    } catch (err) {
+      showToast(err.message || 'Failed to accept');
+    }
+  };
+
+  const handleDecline = async (id) => {
+    try {
+      await requestsApi.declineRequest(id);
+      showToast('Declined request.');
+      fetchRequests();
+    } catch (err) {
+      showToast(err.message || 'Failed to decline');
+    }
+  };
+
+  if (loading) return <div className="scene-light full-bleed" style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p className="metadata">LOADING REQUESTS...</p></div>;
 
   return (
-    <div className="content-section" style={{ maxWidth: '960px', margin: '0 auto', padding: '40px 24px' }}>
-      <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginBottom: '32px' }}>Team Requests</h2>
-      {requests.length === 0 ? (
-        <div className="status-empty">
-          <p className="eyebrow">NO REQUESTS YET</p>
-          <h2>When someone thinks your skills complete their team, they'll show up here.</h2>
+    <div className="scene-light full-bleed" style={{ minHeight: '100svh', paddingTop: '120px', paddingBottom: '120px' }}>
+      <div className="editorial-grid">
+        <div style={{ gridColumn: '1 / -1', marginBottom: '10vh' }}>
+          <h1 className="display-xl">
+            THEY WANT<br/>TO BUILD<br/>WITH YOU.
+          </h1>
         </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {requests.map(req => (
-            <div key={req.requestId} className="request-card" style={{ 
-              display: 'grid',
-              gridTemplateColumns: 'min-content 1fr min-content',
-              gap: '32px',
-              border: '1px solid var(--line)', 
-              background: 'var(--ink)',
-              padding: '32px',
-              borderRadius: '2px'
-            }}>
-              <div style={{ width: '120px' }}>
-                <AnimalAvatar animal={req.sender.avatar || 'raccoon'} label={req.sender.name} />
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.8rem', margin: '0 0 8px 0', lineHeight: 1 }}>{req.sender.name}</h3>
-                  <p style={{ color: 'var(--paper-dim)', margin: 0, fontFamily: 'var(--font-serif)' }}>
-                    {req.sender.branch || 'Unknown branch'} • {req.sender.year || 'Unknown year'}
-                  </p>
-                </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <div style={{ gridColumn: '1 / -1' }}>
+          {incoming.length === 0 && outgoing.length === 0 && (
+            <p className="body-editorial">No pending requests right now.</p>
+          )}
+
+          {incoming.length > 0 && (
+            <div style={{ marginBottom: '6rem' }}>
+              <p className="metadata" style={{ marginBottom: '2rem' }}>INCOMING</p>
+              {incoming.map((r, i) => (
+                <div key={r.id} className="request-row" style={{ opacity: r.status !== 'pending' ? 0.5 : 1 }}>
+                  <p className="metadata">0{i + 1}</p>
+                  <img className="request-avatar" src={`/assets/${r.sender_avatar || 'avatar-1.png'}`} alt={r.sender_name} />
                   <div>
-                    <strong style={{ fontSize: '0.65rem', letterSpacing: '0.15em', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>THEIR SKILLS</strong>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {req.sender.skills.map(s => (
-                        <span key={s} style={{ padding: '4px 10px', background: 'var(--surface)', color: 'var(--paper)', fontSize: '0.8rem', borderRadius: '4px' }}>{s}</span>
-                      ))}
-                    </div>
+                    <h3 className="display-lg" style={{ fontSize: '2rem' }}>{r.sender_name}</h3>
+                    <p className="metadata">{r.sender_branch} • {r.sender_year}</p>
                   </div>
                   <div>
-                    <strong style={{ fontSize: '0.65rem', letterSpacing: '0.15em', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>LOOKING FOR</strong>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {req.sender.lookingFor.map(s => (
-                        <span key={s} style={{ padding: '4px 10px', border: '1px solid var(--line)', color: 'var(--paper-dim)', fontSize: '0.8rem', borderRadius: '4px' }}>{s}</span>
-                      ))}
-                    </div>
+                    <p className="body-editorial" style={{ marginBottom: '1rem' }}>{r.complement_reasons?.[0] || 'They bring skills you need.'}</p>
+                    <p className="metadata">SCORE: {r.complement_score}%</p>
                   </div>
-                </div>
-
-                <div>
-                  <strong style={{ fontSize: '0.65rem', letterSpacing: '0.15em', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>WHY THIS COULD WORK</strong>
-                  <ul style={{ margin: 0, paddingLeft: '16px', color: 'var(--paper-dim)', fontFamily: 'var(--font-serif)' }}>
-                    {req.sender.complementReasons && req.sender.complementReasons.length > 0 ? (
-                      req.sender.complementReasons.map((reason, i) => <li key={i} style={{ marginBottom: '4px' }}>{reason}</li>)
+                  <div className="request-actions">
+                    {r.status === 'pending' ? (
+                      <>
+                        <button className="btn-editorial" onClick={() => handleAccept(r.id)}>ACCEPT</button>
+                        <button className="btn-outline" style={{ padding: '8px' }} onClick={() => handleDecline(r.id)}>DECLINE</button>
+                      </>
                     ) : (
-                      <li>Could be an interesting wildcard match.</li>
+                      <p className="metadata">{r.status}</p>
                     )}
-                  </ul>
+                  </div>
                 </div>
-
-                <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
-                  <button className="primary-action" onClick={() => handleAction(req.requestId, 'accept')} style={{ padding: '12px 32px' }}>ACCEPT</button>
-                  <button className="secondary-action" onClick={() => handleAction(req.requestId, 'decline')} style={{ padding: '12px 32px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--paper)', cursor: 'pointer' }}>DECLINE</button>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <span className="signal-line" style={{ height: '40px', width: '1px', background: 'var(--accent)', marginBottom: '12px' }} />
-                <b style={{ fontSize: '2rem', color: 'var(--accent)' }}>{req.sender.complementScore || 10}%</b>
-                <small style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'var(--muted)', textAlign: 'center', marginTop: '4px' }}>COMPLEMENT<br/>SCORE</small>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {outgoing.length > 0 && (
+            <div>
+              <p className="metadata" style={{ marginBottom: '2rem' }}>OUTGOING (WAITING)</p>
+              {outgoing.map((r, i) => (
+                <div key={r.id} className="request-row" style={{ opacity: r.status !== 'pending' ? 0.5 : 1 }}>
+                  <p className="metadata">0{i + 1}</p>
+                  <img className="request-avatar" src={`/assets/${r.receiver_avatar || 'avatar-2.png'}`} alt={r.receiver_name} />
+                  <div>
+                    <h3 className="display-lg" style={{ fontSize: '2rem' }}>{r.receiver_name}</h3>
+                  </div>
+                  <div>
+                    <p className="metadata" style={{ color: 'var(--wine-700)' }}>{r.status}</p>
+                  </div>
+                  <div />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
-  )
+  );
 }

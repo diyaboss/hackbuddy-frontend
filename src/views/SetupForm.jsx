@@ -1,383 +1,159 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { allSkills } from '../data/profiles'
-import AvatarPicker from '../components/AvatarPicker'
-import { profileApi } from '../api/profile'
-import { authApi } from '../api/auth'
-import ThemedSelect from '../components/ThemedSelect'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { profileApi } from '../api/profile';
 
-const PREDEFINED_SKILLS = allSkills.slice(0, 9)
+const SKILL_OPTIONS = ['Frontend', 'Backend', 'Design', 'Mobile', 'AI/ML', 'Blockchain', 'Hardware', 'Product'];
+const GENDER_OPTIONS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+const AVATAR_OPTIONS = ['avatar-1.png', 'avatar-2.png', 'avatar-3.png', 'avatar-4.png', 'avatar-5.png', 'avatar-6.png'];
 
 export default function SetupForm({ user, setUser, showToast }) {
-  const navigate = useNavigate()
-  
-  const [name, setName] = useState('')
-  const [branch, setBranch] = useState('')
-  const [year, setYear] = useState('')
-  const [gender, setGender] = useState('Prefer not to say') // Just default to something, original didn't even have a gender dropdown, but backend needs it. Wait! Let's check original fields.
-  // Original had: Your name, Branch & year, Current team size, Your strongest skills, I need teammates who know..., Your hackathon animal, At 2:47 AM when it breaks...
-  const [teamSize, setTeamSize] = useState('Just me')
-  const [selectedAvatar, setSelectedAvatar] = useState('raccoon')
-  const [bio, setBio] = useState('') // Used for "At 2:47 AM..."
-  
-  const [selectedSkills, setSelectedSkills] = useState([])
-  const [lookingFor, setLookingFor] = useState([])
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    branch: user?.branch || '',
+    year: user?.year || '',
+    gender: user?.gender || '',
+    team_size: user?.team_size || 4,
+    bio: user?.bio || '',
+    working_style: user?.working_style || '',
+    avatar: user?.avatar || AVATAR_OPTIONS[0],
+    skills: user?.skills || [],
+    looking_for: user?.looking_for || []
+  });
 
-  const [showOtherSkill, setShowOtherSkill] = useState(false)
-  const [customSkillInput, setCustomSkillInput] = useState('')
-  const [skillError, setSkillError] = useState('')
+  const toggleArrayItem = (arrayName, item) => {
+    setFormData(prev => ({
+      ...prev,
+      [arrayName]: prev[arrayName].includes(item)
+        ? prev[arrayName].filter(i => i !== item)
+        : [...prev[arrayName], item]
+    }));
+  };
 
-  const [showOtherLookingFor, setShowOtherLookingFor] = useState(false)
-  const [customLookingForInput, setCustomLookingForInput] = useState('')
-  const [lookingForError, setLookingForError] = useState('')
-
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    profileApi.getMe()
-      .then(data => {
-        if (data.exists) {
-          setName(data.name || '')
-          setBranch(data.branch || '')
-          setYear(data.year || '')
-          setTeamSize(data.team_size === 1 ? 'Just me' : `${data.team_size} people`)
-          setGender(data.gender || 'Prefer not to say')
-          setBio(data.bio || '')
-          setSelectedAvatar(data.avatar || 'raccoon')
-          setSelectedSkills(data.skills || [])
-          setLookingFor(data.lookingFor || [])
-        }
-      })
-      .finally(() => setLoading(false))
-  }, [])
-
-  const toggleSkill = (skill) => {
-    setSkillError('')
-    if (selectedSkills.includes(skill)) {
-      setSelectedSkills(prev => prev.filter(s => s !== skill))
-    } else {
-      if (selectedSkills.length >= 4) {
-        setSkillError('You can select a maximum of 4 skills.')
-        return
-      }
-      setSelectedSkills(prev => [...prev, skill])
-    }
-  }
-
-  const handleAddCustomSkill = () => {
-    setSkillError('')
-    const trimmed = customSkillInput.trim()
-    if (!trimmed) return
-    if (selectedSkills.includes(trimmed)) {
-      setCustomSkillInput('')
-      setShowOtherSkill(false)
-      return
-    }
-    if (selectedSkills.length >= 4) {
-      setSkillError('You can select a maximum of 4 skills.')
-      return
-    }
-    setSelectedSkills(prev => [...prev, trimmed])
-    setCustomSkillInput('')
-    setShowOtherSkill(false)
-  }
-
-  const toggleLookingFor = (skill) => {
-    setLookingForError('')
-    if (lookingFor.includes(skill)) {
-      setLookingFor(prev => prev.filter(s => s !== skill))
-    } else {
-      if (lookingFor.length >= 4) {
-        setLookingForError('You can select a maximum of 4 skills.')
-        return
-      }
-      setLookingFor(prev => [...prev, skill])
-    }
-  }
-
-  const handleAddCustomLookingFor = () => {
-    setLookingForError('')
-    const trimmed = customLookingForInput.trim()
-    if (!trimmed) return
-    if (lookingFor.includes(trimmed)) {
-      setCustomLookingForInput('')
-      setShowOtherLookingFor(false)
-      return
-    }
-    if (lookingFor.length >= 4) {
-      setLookingForError('You can select a maximum of 4 skills.')
-      return
-    }
-    setLookingFor(prev => [...prev, trimmed])
-    setCustomLookingForInput('')
-    setShowOtherLookingFor(false)
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (selectedSkills.length < 2) {
-      setSkillError('Please select at least 2 skills.')
-      return
-    }
-    if (lookingFor.length < 2) {
-      setLookingForError('Please select at least 2 skills.')
-      return
+  const handleSave = async () => {
+    if (!formData.name || !formData.branch || !formData.year || !formData.gender || !formData.working_style) {
+      showToast('Please fill all required fields before finishing.');
+      return;
     }
     
-    setSaving(true)
-    
-    // Parse original UI inputs back into backend fields
-    const parsedTeamSize = teamSize === 'Just me' ? 1 : parseInt(teamSize[0], 10)
-
     try {
-      await profileApi.updateMe({
-        name,
-        branch: branch || 'Unknown',
-        year: year || 'Unknown',
-        gender,
-        team_size: parsedTeamSize,
-        bio,
-        avatar: selectedAvatar,
-        working_style: '',
-        skills: selectedSkills,
-        lookingFor
-      })
-      const fresh = await authApi.me()
-      setUser(fresh.user)
-      showToast('Profile saved')
-      navigate('/discover')
+      setLoading(true);
+      const data = await profileApi.upsert(formData);
+      setUser(data.user);
+      navigate('/discover');
     } catch (err) {
-      showToast(err.message || 'Failed to save profile')
+      showToast(err.message || 'Failed to save profile');
     } finally {
-      setSaving(false)
+      setLoading(false);
     }
-  }
+  };
 
-  if (loading) return <div>Loading...</div>
+  const renderStepContent = () => {
+    switch (step) {
+      case 1:
+        return (
+          <div className="setup-step">
+            <h2 className="display-lg">WHO ARE YOU?</h2>
+            <input className="editorial-input" style={{ marginTop: '2rem' }} placeholder="NAME / WHAT SHOULD WE CALL YOU?" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+            <div style={{ marginTop: '4rem' }}>
+              <p className="metadata" style={{ marginBottom: '1rem' }}>CHOOSE AN IDENTITY</p>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                {AVATAR_OPTIONS.map(a => (
+                  <img key={a} src={`/assets/${a}`} alt={a} onClick={() => setFormData({ ...formData, avatar: a })} style={{ width: '80px', height: '80px', cursor: 'pointer', border: formData.avatar === a ? '2px solid var(--lime-400)' : '2px solid transparent', filter: 'grayscale(1)' }} />
+                ))}
+              </div>
+            </div>
+            <div style={{ marginTop: '4rem' }}>
+              <select className="editorial-input" value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })}>
+                <option value="">GENDER</option>
+                {GENDER_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
+          </div>
+        );
+      case 2:
+        return (
+          <div className="setup-step">
+            <h2 className="display-lg">WHAT DO YOU BUILD?</h2>
+            <input className="editorial-input" style={{ marginTop: '2rem' }} placeholder="BRANCH / WHERE DO YOU HACK?" value={formData.branch} onChange={e => setFormData({ ...formData, branch: e.target.value })} />
+            <input className="editorial-input" style={{ marginTop: '2rem' }} placeholder="YEAR / HOW LONG HAVE YOU BEEN AT IT?" value={formData.year} onChange={e => setFormData({ ...formData, year: e.target.value })} />
+            
+            <div style={{ marginTop: '4rem' }}>
+              <p className="metadata" style={{ marginBottom: '1rem' }}>BRINGS / YOUR USEFUL WEAPONS</p>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                {SKILL_OPTIONS.map(s => (
+                  <button key={s} className={`skill-tag ${formData.skills.includes(s) ? 'skill-brings' : ''}`} style={{ borderColor: 'var(--ink-950)', color: formData.skills.includes(s) ? 'var(--cream-50)' : 'inherit', background: formData.skills.includes(s) ? 'var(--ink-950)' : 'transparent' }} onClick={() => toggleArrayItem('skills', s)}>{s}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="setup-step">
+            <h2 className="display-lg">WHAT ARE YOU MISSING?</h2>
+            <div style={{ marginTop: '4rem' }}>
+              <p className="metadata" style={{ marginBottom: '1rem' }}>NEEDS / THE PIECES YOU WANT BESIDE YOU</p>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                {SKILL_OPTIONS.map(s => (
+                  <button key={s} className={`skill-tag ${formData.looking_for.includes(s) ? 'skill-needs' : ''}`} style={{ borderColor: formData.looking_for.includes(s) ? 'var(--wine-700)' : 'var(--ink-950)', color: formData.looking_for.includes(s) ? 'var(--wine-700)' : 'inherit' }} onClick={() => toggleArrayItem('looking_for', s)}>{s}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      case 4:
+        return (
+          <div className="setup-step">
+            <h2 className="display-lg">HOW DO YOU WORK?</h2>
+            <div style={{ marginTop: '4rem' }}>
+              <p className="metadata" style={{ marginBottom: '1rem' }}>WORKING STYLE</p>
+              <select className="editorial-input" value={formData.working_style} onChange={e => setFormData({ ...formData, working_style: e.target.value })}>
+                <option value="">SELECT A STYLE</option>
+                <option value="Fast & Loose">FAST & LOOSE</option>
+                <option value="Methodical">METHODICAL</option>
+                <option value="Somewhere Between">SOMEWHERE BETWEEN</option>
+              </select>
+            </div>
+            <input className="editorial-input" style={{ marginTop: '2rem' }} placeholder="BIO / SHORT STATEMENT (OPTIONAL)" value={formData.bio} onChange={e => setFormData({ ...formData, bio: e.target.value })} />
+          </div>
+        );
+      case 5:
+        return (
+          <div className="setup-step">
+            <h2 className="display-lg">WHO DO YOU WANT TO BUILD WITH?</h2>
+            <div style={{ marginTop: '4rem' }}>
+              <p className="metadata" style={{ marginBottom: '1rem' }}>IDEAL TEAM SIZE</p>
+              <input type="number" className="editorial-input" value={formData.team_size} onChange={e => setFormData({ ...formData, team_size: parseInt(e.target.value) || 4 })} min="2" max="10" />
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <section className="setup-screen">
-      <div className="setup-heading">
-        <p className="eyebrow">01 / QUICK SETUP</p>
-        <h1>What do you<br />bring to the table?</h1>
+    <div className="scene-light full-bleed" style={{ minHeight: '100svh', paddingTop: '120px' }}>
+      <div className="editorial-grid">
+        <div style={{ gridColumn: '1 / 10' }}>
+          {renderStepContent()}
+          
+          <div style={{ marginTop: '10vh', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p className="metadata">{`0${step} / 05`}</p>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              {step > 1 && <button className="btn-outline" style={{ padding: '12px' }} onClick={() => setStep(s => s - 1)}>BACK</button>}
+              {step < 5 ? (
+                <button className="btn-editorial" onClick={() => setStep(s => s + 1)}>NEXT</button>
+              ) : (
+                <button className="btn-editorial" onClick={handleSave} disabled={loading}>{loading ? 'SAVING...' : 'FINISH →'}</button>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
-
-      <form className="setup-form" onSubmit={handleSubmit}>
-        <div className="field-row">
-          <label>
-            <span>Your name</span>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} required />
-          </label>
-          <label>
-            <span>Branch</span>
-            <input type="text" value={branch} onChange={e => setBranch(e.target.value)} placeholder="CSE Cybersecurity" required />
-          </label>
-          <label>
-            <span>Year</span>
-            <input type="text" value={year} onChange={e => setYear(e.target.value)} placeholder="2nd year" required />
-          </label>
-        </div>
-
-        <AvatarPicker selected={selectedAvatar} onSelect={setSelectedAvatar} />
-
-        <div className="field-row">
-          <label>
-            <span>Current team size</span>
-            <ThemedSelect
-              value={teamSize}
-              onChange={e => setTeamSize(e.target.value)}
-              options={[
-                { value: 'Just me', label: 'Just me' },
-                { value: '2 people', label: '2 people' },
-                { value: '3 people', label: '3 people' },
-                { value: '4 people', label: '4 people' }
-              ]}
-            />
-          </label>
-
-          <label>
-            <span>Gender</span>
-            <ThemedSelect
-              value={gender}
-              onChange={e => setGender(e.target.value)}
-              options={[
-                { value: 'Women', label: 'Women' },
-                { value: 'Men', label: 'Men' },
-                { value: 'Non-binary', label: 'Non-binary' },
-                { value: 'Prefer not to say', label: 'Prefer not to say' }
-              ]}
-            />
-          </label>
-        </div>
-
-        <fieldset>
-          <legend>
-            Your strongest skills <small>Pick 2–4</small>
-          </legend>
-          {skillError && <p className="field-error-msg">{skillError}</p>}
-          <div className="choice-grid">
-            {PREDEFINED_SKILLS.map(skill => (
-              <button 
-                key={skill}
-                type="button"
-                className={selectedSkills.includes(skill) ? 'selected' : ''}
-                onClick={() => toggleSkill(skill)}
-              >
-                {skill} <span>{selectedSkills.includes(skill) ? '×' : '+'}</span>
-              </button>
-            ))}
-            {selectedSkills.filter(s => !PREDEFINED_SKILLS.includes(s)).map(skill => (
-              <button 
-                key={skill}
-                type="button" 
-                className="selected"
-                onClick={() => toggleSkill(skill)}
-              >
-                {skill} <span>×</span>
-              </button>
-            ))}
-            <button
-              type="button"
-              className={showOtherSkill ? 'selected' : ''}
-              onClick={() => {
-                setSkillError('')
-                if (!showOtherSkill && selectedSkills.length >= 4) {
-                  setSkillError('You can select a maximum of 4 skills.')
-                  return
-                }
-                setShowOtherSkill(!showOtherSkill)
-              }}
-            >
-              Other <span>{showOtherSkill ? '×' : '+'}</span>
-            </button>
-          </div>
-          {showOtherSkill && (
-            <div className="custom-skill-input-wrap">
-              <input 
-                type="text" 
-                className="custom-skill-input"
-                placeholder="Type custom skill (e.g., Python)..."
-                value={customSkillInput}
-                onChange={(e) => setCustomSkillInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleAddCustomSkill()
-                  }
-                }}
-                autoFocus
-              />
-              <button 
-                type="button" 
-                className="add-custom-btn"
-                onClick={handleAddCustomSkill}
-              >
-                ADD
-              </button>
-            </div>
-          )}
-        </fieldset>
-
-        <fieldset>
-          <legend>
-            I need teammates who know… <small>Pick 2–4</small>
-          </legend>
-          {lookingForError && <p className="field-error-msg">{lookingForError}</p>}
-          <div className="choice-grid">
-            {PREDEFINED_SKILLS.map(skill => (
-              <button 
-                key={skill}
-                type="button"
-                className={lookingFor.includes(skill) ? 'selected' : ''}
-                onClick={() => toggleLookingFor(skill)}
-              >
-                {skill} <span>{lookingFor.includes(skill) ? '×' : '+'}</span>
-              </button>
-            ))}
-            {lookingFor.filter(s => !PREDEFINED_SKILLS.includes(s)).map(skill => (
-              <button 
-                key={skill}
-                type="button" 
-                className="selected"
-                onClick={() => toggleLookingFor(skill)}
-              >
-                {skill} <span>×</span>
-              </button>
-            ))}
-            <button
-              type="button"
-              className={showOtherLookingFor ? 'selected' : ''}
-              onClick={() => {
-                setLookingForError('')
-                if (!showOtherLookingFor && lookingFor.length >= 4) {
-                  setLookingForError('You can select a maximum of 4 skills.')
-                  return
-                }
-                setShowOtherLookingFor(!showOtherLookingFor)
-              }}
-            >
-              Other <span>{showOtherLookingFor ? '×' : '+'}</span>
-            </button>
-          </div>
-          {showOtherLookingFor && (
-            <div className="custom-skill-input-wrap">
-              <input 
-                type="text" 
-                className="custom-skill-input"
-                placeholder="Type custom skill (e.g., Blockchain)..."
-                value={customLookingForInput}
-                onChange={(e) => setCustomLookingForInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleAddCustomLookingFor()
-                  }
-                }}
-                autoFocus
-              />
-              <button 
-                type="button" 
-                className="add-custom-btn"
-                onClick={handleAddCustomLookingFor}
-              >
-                ADD
-              </button>
-            </div>
-          )}
-        </fieldset>
-
-        <div className="field-row">
-          <label>
-            <span>Your hackathon animal</span>
-            <ThemedSelect
-              value="Raccoon"
-              onChange={() => {}}
-              options={[
-                { value: 'Raccoon', label: 'Raccoon' },
-                { value: 'Owl', label: 'Owl' },
-                { value: 'Black cat', label: 'Black cat' },
-                { value: 'Golden retriever', label: 'Golden retriever' }
-              ]}
-            />
-          </label>
-          <label>
-            <span>At 2:47 AM, when it breaks…</span>
-            <input type="text" value={bio} onChange={e => setBio(e.target.value)} placeholder="I open the logs and pretend not to panic" />
-          </label>
-        </div>
-
-        <div className="form-footer">
-          <p>
-            <b>Team eligibility:</b> Review all hackathon rules before final submission.
-          </p>
-          <button className="primary-action" type="submit" disabled={saving}>
-            {saving ? 'SAVING...' : 'FIND MY PEOPLE →'}
-          </button>
-        </div>
-      </form>
-    </section>
-  )
+    </div>
+  );
 }
-
-

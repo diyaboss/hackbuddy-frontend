@@ -1,44 +1,67 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { matchesApi } from '../api/matches'
-import AnimalAvatar from '../components/AnimalAvatar'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { matchesApi } from '../api/matches';
 
-export default function MatchesView({ showToast }) {
-  const [matches, setMatches] = useState([])
-  const [loading, setLoading] = useState(true)
+export default function MatchesView({ user, showToast }) {
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    matchesApi.getMatches()
-      .then(data => setMatches(data))
-      .catch(() => showToast('Failed to load matches'))
-      .finally(() => setLoading(false))
-  }, [])
+    fetchMatches();
+  }, []);
 
-  if (loading) return <div>Loading...</div>
+  const fetchMatches = async () => {
+    try {
+      const data = await matchesApi.getMatches();
+      setMatches(data);
+    } catch (err) {
+      showToast('Failed to load matches');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div className="scene-dark full-bleed" style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p className="metadata">LOADING MATCHES...</p></div>;
 
   return (
-    <div className="content-section">
-      <h2 style={{ marginBottom: '2rem' }}>Your Team Connections</h2>
-      {matches.length === 0 ? (
-        <p>You don't have any accepted teammates yet.</p>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
-          {matches.map(match => (
-            <div key={match.matchId} className="match-card" style={{ border: '1px solid var(--color-surface-dim)', padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ width: '60px', height: '60px' }}>
-                <AnimalAvatar animal={match.teammate.avatar} />
+    <div className="scene-dark full-bleed" style={{ minHeight: '100svh', paddingTop: '120px', paddingBottom: '120px' }}>
+      <div className="editorial-grid">
+        <div style={{ gridColumn: '1 / -1', marginBottom: '10vh' }}>
+          <h1 className="display-xl">
+            YOU FOUND<br/>
+            <span style={{ color: 'var(--lime-400)' }}>THE OTHER HALF.</span>
+          </h1>
+          <p className="metadata" style={{ marginTop: '2rem' }}>OF THE BUILD.</p>
+        </div>
+
+        {matches.length === 0 ? (
+          <div style={{ gridColumn: '1 / -1' }}>
+            <p className="body-editorial">No matches yet. Keep discovering.</p>
+          </div>
+        ) : (
+          matches.map(m => (
+            <div key={m.id} style={{ gridColumn: '1 / -1' }}>
+              <div className="match-split">
+                <div style={{ textAlign: 'right' }}>
+                  <h2 className="display-lg">{user.name}</h2>
+                  <p className="metadata">YOU</p>
+                </div>
+                <div className="match-connector">+</div>
+                <div>
+                  <h2 className="display-lg">{m.partner_name}</h2>
+                  <p className="metadata">{m.partner_branch}</p>
+                </div>
               </div>
-              <div style={{ flex: 1 }}>
-                <h3>{match.teammate.name}</h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--color-primary)' }}>{match.teammate.skills.join(', ')}</p>
-                <Link to={`/matches/${match.matchId}`} className="primary-action" style={{ display: 'inline-block', marginTop: '0.5rem', padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}>
-                  OPEN ROOM
-                </Link>
+              <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                <button className="btn-editorial" onClick={() => navigate(`/matches/${m.id}`)}>
+                  ENTER MATCH ROOM →
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
-  )
+  );
 }
