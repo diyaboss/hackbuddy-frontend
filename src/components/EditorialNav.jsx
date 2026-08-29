@@ -19,6 +19,11 @@ export default function EditorialNav({ user, onLogout }) {
             <a href="#how-it-works" className={getLinkClass('#how-it-works')}>HOW IT WORKS</a>
             <Link to="/auth" className={getLinkClass('/auth')}>SIGN IN</Link>
           </>
+        ) : user.role === 'admin' || user.role === 'superadmin' ? (
+          <>
+            <Link to="/admin" className={getLinkClass('/admin')}>ADMIN</Link>
+            <button onClick={onLogout} className="nav-link btn-link" style={{ border: 'none', background: 'transparent', color: 'inherit', fontFamily: 'inherit', fontSize: 'inherit', padding: 0, cursor: 'pointer' }}>LOGOUT</button>
+          </>
         ) : (
           <>
             <Link to="/discover" className={getLinkClass('/discover')}>DISCOVER</Link>

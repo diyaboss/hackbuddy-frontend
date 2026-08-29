@@ -1,24 +1,70 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CableConnector, PuzzleSlot, FloatingTerminal } from '../components/TechObjects';
 
 export default function HomePage({ user }) {
   const navigate = useNavigate();
   const [scrollY, setScrollY] = useState(0);
+  const [processProgress, setProcessProgress] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => 
+    typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
+  );
+  const processRef = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handler = (e) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrollY(window.scrollY);
+          if (processRef.current) {
+            const rect = processRef.current.getBoundingClientRect();
+            // rect.top is 0 when the sticky section starts
+            // rect.bottom is window.innerHeight when it ends
+            const totalScroll = rect.height - window.innerHeight;
+            let progress = -rect.top / totalScroll;
+            progress = Math.max(0, Math.min(1, progress));
+            setProcessProgress(progress);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleStart = () => {
-    if (!user) navigate('/auth');
-    else if (!user.hasPhoneNumber) navigate('/phone');
-    else if (!user.profile_complete) navigate('/setup');
-    else if (user.role === 'admin') navigate('/admin');
-    else navigate('/discover');
+    if (!user) {
+      navigate('/auth');
+    } else if (user.role === 'admin' || user.role === 'superadmin') {
+      navigate('/admin');
+    } else if (!user.hasPhoneNumber) {
+      navigate('/phone');
+    } else if (!user.profile_complete) {
+      navigate('/setup');
+    } else {
+      navigate('/discover');
+    }
   };
+
+  const getProcessOpacity = (index) => {
+    if (prefersReducedMotion) return 1;
+    const stage = Math.floor(processProgress * 4); // 0, 1, 2, 3
+    const targetStage = Math.min(3, stage);
+    return targetStage === index ? 1 : 0.2;
+  };
+
+  const processStageIndex = prefersReducedMotion ? 3 : Math.min(3, Math.floor(processProgress * 4));
 
   return (
     <div className="home-container">
@@ -28,8 +74,8 @@ export default function HomePage({ user }) {
           <p className="metadata" style={{ gridColumn: '1 / -1', marginBottom: '2rem' }}>
             FIND WHAT YOUR TEAM IS MISSING.
           </p>
-          <h1 className="display-hero" style={{ fontSize: 'clamp(5rem, 18vw, 22rem)', transform: `translateY(${scrollY * 0.2}px)` }}>HACKBUDDY</h1>
-          <div style={{ position: 'absolute', top: '20vh', right: '10vw', zIndex: 1, transform: `translateY(${scrollY * -0.1}px)` }}>
+          <h1 className="display-hero" style={{ fontSize: 'clamp(5rem, 18vw, 22rem)', transform: prefersReducedMotion ? 'none' : `translateY(${scrollY * 0.2}px)` }}>HACKBUDDY</h1>
+          <div style={{ position: 'absolute', top: '20vh', right: '10vw', zIndex: 1, transform: prefersReducedMotion ? 'none' : `translateY(${scrollY * -0.1}px)` }}>
             <CableConnector style={{ transform: 'scale(1.5) rotate(15deg)' }} />
           </div>
           <p className="metadata" style={{ position: 'absolute', bottom: 'var(--outer-margin)', right: 'var(--outer-margin)' }}>
@@ -135,17 +181,23 @@ export default function HomePage({ user }) {
       </section>
 
       {/* SCENE 6 — PROCESS */}
-      <section className="scene-light" style={{ position: 'relative', height: '300vh' }}>
-        <div style={{ position: 'sticky', top: 0, height: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-          <div className="editorial-grid" style={{ width: '100%' }}>
-            <div style={{ gridColumn: '1 / 6' }}>
-              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw' }}>FIND.</h2>
-              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: 0.2 }}>REQUEST.</h2>
-              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: 0.2 }}>MATCH.</h2>
-              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: 0.2 }}>BUILD.</h2>
+      <section id="how-it-works" ref={processRef} className="scene-light" style={{ position: 'relative', height: prefersReducedMotion ? 'auto' : '300vh', minHeight: '100vh' }}>
+        <div style={{ position: prefersReducedMotion ? 'relative' : 'sticky', top: 0, height: prefersReducedMotion ? 'auto' : '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden', padding: prefersReducedMotion ? '10vh 0' : 0 }}>
+          <div className="editorial-grid" style={{ width: '100%', gap: prefersReducedMotion ? '4rem' : 'var(--gutter)' }}>
+            <div style={{ gridColumn: '1 / 6', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: getProcessOpacity(0), transition: 'opacity 0.3s' }}>FIND.</h2>
+              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: getProcessOpacity(1), transition: 'opacity 0.3s' }}>REQUEST.</h2>
+              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: getProcessOpacity(2), transition: 'opacity 0.3s' }}>MATCH.</h2>
+              <h2 className="display-hero" style={{ color: 'var(--ink-950)', fontSize: '10vw', opacity: getProcessOpacity(3), transition: 'opacity 0.3s' }}>BUILD.</h2>
             </div>
-            <div style={{ gridColumn: '8 / -1', alignSelf: 'center' }}>
-              <PuzzleSlot style={{ transform: `rotate(${scrollY * 0.1}deg)`, transition: 'transform 0.1s ease-out' }} />
+            <div style={{ gridColumn: '8 / -1', alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <PuzzleSlot style={{ transform: prefersReducedMotion ? 'none' : `rotate(${scrollY * 0.1}deg)`, transition: 'transform 0.1s ease-out' }} />
+              <p className="metadata" style={{ color: 'var(--wine-700)', fontSize: '1.2rem' }}>
+                {processStageIndex === 0 && 'Locate the exact skills missing from your team.'}
+                {processStageIndex === 1 && 'Send a direct, private request.'}
+                {processStageIndex === 2 && 'Confirm the match and unlock contact details.'}
+                {processStageIndex === 3 && 'Get to work.'}
+              </p>
             </div>
           </div>
         </div>
