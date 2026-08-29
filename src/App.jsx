@@ -11,6 +11,7 @@ import MatchesView from './views/MatchesView'
 import MatchRoomView from './views/MatchRoomView'
 import AdminView from './views/AdminView'
 import AuthView from './views/AuthView'
+import ProfileView from './views/ProfileView'
 import { authApi } from './api/auth'
 
 function App() {
@@ -117,6 +118,7 @@ function App() {
         <Route path="/requests" element={requireProfile(<RequestsView user={user} showToast={showToast} />)} />
         <Route path="/matches" element={requireProfile(<MatchesView user={user} showToast={showToast} />)} />
         <Route path="/matches/:id" element={requireProfile(<MatchRoomView user={user} showToast={showToast} />)} />
+        <Route path="/profile" element={requireProfile(<ProfileView user={user} setUser={setUser} showToast={showToast} />)} />
         
         <Route path="/admin" element={requireAdmin(<AdminView user={user} showToast={showToast} />)} />
       </Routes>

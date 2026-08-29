@@ -41,7 +41,7 @@ export default function MatchesView({ user, showToast }) {
           </div>
         ) : (
           matches.map(m => (
-            <div key={m.id} style={{ gridColumn: '1 / -1' }}>
+            <div key={m.matchId} style={{ gridColumn: '1 / -1' }}>
               <div className="match-split">
                 <div style={{ textAlign: 'right' }}>
                   <h2 className="display-lg">{user.name}</h2>
@@ -49,12 +49,12 @@ export default function MatchesView({ user, showToast }) {
                 </div>
                 <div className="match-connector">+</div>
                 <div>
-                  <h2 className="display-lg">{m.partner_name}</h2>
-                  <p className="metadata">{m.partner_branch}</p>
+                  <h2 className="display-lg">{m.teammate.name}</h2>
+                  <p className="metadata">{m.teammate.branch}</p>
                 </div>
               </div>
               <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                <button className="btn-editorial" onClick={() => navigate(`/matches/${m.id}`)}>
+                <button className="btn-editorial" onClick={() => navigate(`/matches/${m.matchId}`)}>
                   ENTER MATCH ROOM →
                 </button>
               </div>

@@ -15,12 +15,12 @@ export default function SetupForm({ user, setUser, showToast }) {
     branch: user?.branch || '',
     year: user?.year || '',
     gender: user?.gender || '',
-    team_size: user?.team_size || 4,
+    teamSize: user?.teamSize || 4,
     bio: user?.bio || '',
-    working_style: user?.working_style || '',
+    workingStyle: user?.workingStyle || '',
     avatar: user?.avatar || AVATAR_OPTIONS[0],
     skills: user?.skills || [],
-    looking_for: user?.looking_for || []
+    lookingFor: user?.lookingFor || []
   });
 
   const toggleArrayItem = (arrayName, item) => {
@@ -33,14 +33,14 @@ export default function SetupForm({ user, setUser, showToast }) {
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.branch || !formData.year || !formData.gender || !formData.working_style) {
+    if (!formData.name || !formData.branch || !formData.year || !formData.gender || !formData.workingStyle) {
       showToast('Please fill all required fields before finishing.');
       return;
     }
     
     try {
       setLoading(true);
-      const data = await profileApi.upsert(formData);
+      const data = await profileApi.updateMe(formData);
       setUser(data.user);
       navigate('/discover');
     } catch (err) {
@@ -98,7 +98,7 @@ export default function SetupForm({ user, setUser, showToast }) {
               <p className="metadata" style={{ marginBottom: '1rem' }}>NEEDS / THE PIECES YOU WANT BESIDE YOU</p>
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 {SKILL_OPTIONS.map(s => (
-                  <button key={s} className={`skill-tag ${formData.looking_for.includes(s) ? 'skill-needs' : ''}`} style={{ borderColor: formData.looking_for.includes(s) ? 'var(--wine-700)' : 'var(--ink-950)', color: formData.looking_for.includes(s) ? 'var(--wine-700)' : 'inherit' }} onClick={() => toggleArrayItem('looking_for', s)}>{s}</button>
+                  <button key={s} className={`skill-tag ${formData.lookingFor.includes(s) ? 'skill-needs' : ''}`} style={{ borderColor: formData.lookingFor.includes(s) ? 'var(--wine-700)' : 'var(--ink-950)', color: formData.lookingFor.includes(s) ? 'var(--wine-700)' : 'inherit' }} onClick={() => toggleArrayItem('lookingFor', s)}>{s}</button>
                 ))}
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function SetupForm({ user, setUser, showToast }) {
             <h2 className="display-lg">HOW DO YOU WORK?</h2>
             <div style={{ marginTop: '4rem' }}>
               <p className="metadata" style={{ marginBottom: '1rem' }}>WORKING STYLE</p>
-              <select className="editorial-input" value={formData.working_style} onChange={e => setFormData({ ...formData, working_style: e.target.value })}>
+              <select className="editorial-input" value={formData.workingStyle} onChange={e => setFormData({ ...formData, workingStyle: e.target.value })}>
                 <option value="">SELECT A STYLE</option>
                 <option value="Fast & Loose">FAST & LOOSE</option>
                 <option value="Methodical">METHODICAL</option>
@@ -126,7 +126,7 @@ export default function SetupForm({ user, setUser, showToast }) {
             <h2 className="display-lg">WHO DO YOU WANT TO BUILD WITH?</h2>
             <div style={{ marginTop: '4rem' }}>
               <p className="metadata" style={{ marginBottom: '1rem' }}>IDEAL TEAM SIZE</p>
-              <input type="number" className="editorial-input" value={formData.team_size} onChange={e => setFormData({ ...formData, team_size: parseInt(e.target.value) || 4 })} min="2" max="10" />
+              <input type="number" className="editorial-input" value={formData.teamSize} onChange={e => setFormData({ ...formData, teamSize: parseInt(e.target.value) || 4 })} min="2" max="10" />
             </div>
           </div>
         );

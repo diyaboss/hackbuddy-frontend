@@ -20,7 +20,7 @@ export default function EditorialNav({ user, onLogout }) {
             <Link to="/discover" className="nav-link">DISCOVER</Link>
             <Link to="/requests" className="nav-link">REQUESTS</Link>
             <Link to="/matches" className="nav-link">MATCHES</Link>
-            <Link to="/setup" className="nav-link">PROFILE</Link>
+            <Link to="/profile" className="nav-link">PROFILE</Link>
             <button onClick={onLogout} className="nav-link btn-link">LOGOUT</button>
           </>
         )}

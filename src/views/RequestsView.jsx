@@ -65,22 +65,22 @@ export default function RequestsView({ user, showToast }) {
             <div style={{ marginBottom: '6rem' }}>
               <p className="metadata" style={{ marginBottom: '2rem' }}>INCOMING</p>
               {incoming.map((r, i) => (
-                <div key={r.id} className="request-row" style={{ opacity: r.status !== 'pending' ? 0.5 : 1 }}>
+                <div key={r.requestId} className="request-row" style={{ opacity: r.status !== 'pending' ? 0.5 : 1 }}>
                   <p className="metadata">0{i + 1}</p>
-                  <img className="request-avatar" src={`/assets/${r.sender_avatar || 'avatar-1.png'}`} alt={r.sender_name} />
+                  <img className="request-avatar" src={`/assets/${r.sender?.avatar || 'avatar-1.png'}`} alt={r.sender?.name} />
                   <div>
-                    <h3 className="display-lg" style={{ fontSize: '2rem' }}>{r.sender_name}</h3>
-                    <p className="metadata">{r.sender_branch} • {r.sender_year}</p>
+                    <h3 className="display-lg" style={{ fontSize: '2rem' }}>{r.sender?.name}</h3>
+                    <p className="metadata">{r.sender?.branch} • {r.sender?.year}</p>
                   </div>
                   <div>
-                    <p className="body-editorial" style={{ marginBottom: '1rem' }}>{r.complement_reasons?.[0] || 'They bring skills you need.'}</p>
-                    <p className="metadata">SCORE: {r.complement_score}%</p>
+                    <p className="body-editorial" style={{ marginBottom: '1rem' }}>{r.sender?.complementReasons?.[0] || 'They bring skills you need.'}</p>
+                    <p className="metadata">SCORE: {r.sender?.complementScore}%</p>
                   </div>
                   <div className="request-actions">
                     {r.status === 'pending' ? (
                       <>
-                        <button className="btn-editorial" onClick={() => handleAccept(r.id)}>ACCEPT</button>
-                        <button className="btn-outline" style={{ padding: '8px' }} onClick={() => handleDecline(r.id)}>DECLINE</button>
+                        <button className="btn-editorial" onClick={() => handleAccept(r.requestId)}>ACCEPT</button>
+                        <button className="btn-outline" style={{ padding: '8px' }} onClick={() => handleDecline(r.requestId)}>DECLINE</button>
                       </>
                     ) : (
                       <p className="metadata">{r.status}</p>
@@ -95,11 +95,11 @@ export default function RequestsView({ user, showToast }) {
             <div>
               <p className="metadata" style={{ marginBottom: '2rem' }}>OUTGOING (WAITING)</p>
               {outgoing.map((r, i) => (
-                <div key={r.id} className="request-row" style={{ opacity: r.status !== 'pending' ? 0.5 : 1 }}>
+                <div key={r.requestId} className="request-row" style={{ opacity: r.status !== 'pending' ? 0.5 : 1 }}>
                   <p className="metadata">0{i + 1}</p>
-                  <img className="request-avatar" src={`/assets/${r.receiver_avatar || 'avatar-2.png'}`} alt={r.receiver_name} />
+                  <img className="request-avatar" src={`/assets/${r.receiver?.avatar || 'avatar-2.png'}`} alt={r.receiver?.name} />
                   <div>
-                    <h3 className="display-lg" style={{ fontSize: '2rem' }}>{r.receiver_name}</h3>
+                    <h3 className="display-lg" style={{ fontSize: '2rem' }}>{r.receiver?.name}</h3>
                   </div>
                   <div>
                     <p className="metadata" style={{ color: 'var(--wine-700)' }}>{r.status}</p>

@@ -1,36 +1,63 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import {
+  AsYouType,
+  getCountries,
+  getCountryCallingCode,
+  parsePhoneNumberWithError
+} from 'libphonenumber-js';
 import { authApi } from '../api/auth';
 
-export default function PhoneView({ user, setUser, showToast }) {
-  const [phone, setPhone] = useState('');
-  const [loading, setLoading] = useState(false);
+export default function PhoneView({ setUser, showToast }) {
+  const [country, setCountry] = useState('IN');
+  const [nationalNumber, setNationalNumber] = useState('');
+  const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    let formattedPhone = phone.trim();
-    if (!formattedPhone.startsWith('+')) {
-      formattedPhone = '+' + formattedPhone;
-    }
-    
-    const phoneNumber = parsePhoneNumberFromString(formattedPhone);
-    if (!phoneNumber || !phoneNumber.isValid()) {
-      showToast('Please enter a valid phone number with country code (e.g. +91...)');
+  const countries = useMemo(() => {
+    const names = new Intl.DisplayNames(['en'], { type: 'region' });
+    return getCountries()
+      .map((iso) => ({
+        iso,
+        name: names.of(iso) || iso,
+        callingCode: `+${getCountryCallingCode(iso)}`,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  const handleNumberChange = (event) => {
+    const digitsAndFormatting = event.target.value;
+    const formatter = new AsYouType(country);
+    setNationalNumber(formatter.input(digitsAndFormatting));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    let parsed;
+    try {
+      parsed = parsePhoneNumberWithError(nationalNumber, country);
+      if (!parsed.isValid()) throw new Error('Invalid phone');
+    } catch {
+      showToast('Enter a valid phone number for the selected country.');
       return;
     }
 
+    setSaving(true);
     try {
-      setLoading(true);
-      const data = await authApi.updatePhone(phoneNumber.number);
-      setUser(data.user);
-      navigate('/setup');
+      await authApi.savePhone(nationalNumber, country);
+      const fresh = await authApi.me();
+      setUser(fresh.user);
+
+      if (fresh.user.profile_complete) {
+        navigate('/discover');
+      } else {
+        navigate('/setup');
+      }
     } catch (err) {
       showToast(err.message || 'Failed to update phone number');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -44,19 +71,35 @@ export default function PhoneView({ user, setUser, showToast }) {
           </h1>
           
           <form onSubmit={handleSubmit} style={{ marginTop: '4rem' }}>
-            <input
-              type="tel"
-              className="editorial-input"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+91 98765 43210"
-              disabled={loading}
-              autoFocus
-            />
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+              <select 
+                className="editorial-input"
+                style={{ width: '120px', paddingBottom: '0.8rem' }}
+                value={country}
+                onChange={(e) => { setCountry(e.target.value); setNationalNumber(''); }}
+              >
+                {countries.map(c => (
+                  <option key={c.iso} value={c.iso}>{c.iso} {c.callingCode}</option>
+                ))}
+              </select>
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
+                className="editorial-input"
+                value={nationalNumber}
+                onChange={handleNumberChange}
+                placeholder="98765 43210"
+                required
+                disabled={saving}
+                autoFocus
+                style={{ flex: 1 }}
+              />
+            </div>
             
             <div style={{ marginTop: '3rem', display: 'flex', gap: '2rem', alignItems: 'center' }}>
-              <button type="submit" className="btn-editorial" disabled={loading}>
-                {loading ? 'SAVING...' : 'SAVE NUMBER →'}
+              <button type="submit" className="btn-editorial" disabled={saving}>
+                {saving ? 'SAVING...' : 'SAVE NUMBER →'}
               </button>
               <button type="button" className="btn-outline" style={{ padding: '12px', fontFamily: 'var(--font-mono)' }} onClick={() => authApi.logout().then(() => { setUser(null); navigate('/'); })}>
                 BACK
