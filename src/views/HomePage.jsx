@@ -183,7 +183,7 @@ export default function HomePage({ user }) {
           overflow: 'hidden'
         }}>
           <img 
-            src="/brand/hackathon-collage.webp" 
+            src="/brand/hackathon-collage.jpg" 
             alt="Hackathon Event Collage" 
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={(e) => {
