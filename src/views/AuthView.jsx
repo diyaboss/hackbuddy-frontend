@@ -8,8 +8,9 @@ export default function AuthView({ setUser, showToast }) {
 
   const handleSuccess = async (credentialResponse) => {
     try {
-      const data = await authApi.googleLogin(credentialResponse.credential)
-      const nextUser = data.user
+      await authApi.googleLogin(credentialResponse.credential)
+      const sessionData = await authApi.me()
+      const nextUser = sessionData.user
       setUser(nextUser)
 
       if (nextUser.role === 'admin' || nextUser.role === 'superadmin') {

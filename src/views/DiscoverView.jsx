@@ -20,6 +20,7 @@ export default function DiscoverView({ user, setUser, showToast }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [pendingStatus, setPendingStatus] = useState(null)
   const swipeStartRef = useRef(null)
+  const swipeOffsetRef = useRef(0)
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -28,6 +29,7 @@ export default function DiscoverView({ user, setUser, showToast }) {
       setCandidates(Array.isArray(data) ? data : [])
       setCurrentIndex(0)
       setSwipeOffset(0)
+      swipeOffsetRef.current = 0
     } catch (err) {
       setCandidates([])
       showToast(err.message || 'Failed to load Discover')
@@ -60,6 +62,7 @@ export default function DiscoverView({ user, setUser, showToast }) {
     window.setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % candidates.length)
       setSwipeOffset(0)
+      swipeOffsetRef.current = 0
     }, 240)
   }
 
@@ -80,6 +83,7 @@ export default function DiscoverView({ user, setUser, showToast }) {
       setCandidates(remaining)
       setCurrentIndex(0)
       setSwipeOffset(0)
+      swipeOffsetRef.current = 0
     } catch (err) {
       showToast(err.message || 'Failed to send request')
     } finally {
@@ -95,20 +99,24 @@ export default function DiscoverView({ user, setUser, showToast }) {
 
   const handlePointerMove = (event) => {
     if (swipeStartRef.current !== null) {
-      setSwipeOffset(event.clientX - swipeStartRef.current)
+      const delta = event.clientX - swipeStartRef.current
+      swipeOffsetRef.current = delta
+      setSwipeOffset(delta)
     }
   }
 
   const handlePointerUp = () => {
     if (swipeStartRef.current === null) return
     swipeStartRef.current = null
+    const finalOffset = swipeOffsetRef.current
 
-    if (swipeOffset > 110) {
+    if (finalOffset > 110) {
       handleTeamUp()
-    } else if (swipeOffset < -110) {
+    } else if (finalOffset < -110) {
       handleNext()
     } else {
       setSwipeOffset(0)
+      swipeOffsetRef.current = 0
     }
   }
 

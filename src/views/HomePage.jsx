@@ -147,8 +147,8 @@ export default function HomePage({ user }) {
         </div>
         <div className="process-row reveal">
           <span>03</span>
-          <h3>Match, chat, build</h3>
-          <p>Mutual team-ups open a conversation so you can stop swiping and start shipping.</p>
+          <h3>Match, connect, build</h3>
+          <p>Accepted team-ups open a Match Room so you can choose a problem statement, share contact details when you're ready, and start building.</p>
         </div>
       </section>
 
@@ -161,19 +161,40 @@ export default function HomePage({ user }) {
           <p>Review the full list of rules on the hackathon guidelines page before finalizing your team.</p>
         </div>
         <div className="rule-numbers reveal">
-          <div>
-            <strong>2–3</strong>
-            <p>people<br /><b>per team</b></p>
-          </div>
-          <div>
-            <strong>4–5</strong>
-            <p>people<br /><b>maximum</b></p>
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <strong>3–5</strong>
+            <p>PEOPLE<br /><b>PER TEAM</b></p>
           </div>
         </div>
       </section>
 
       <section className="final-call">
-        <img className="final-art reveal" src="/brand/hackathon-collage.svg" alt="Illustrated hackathon tools" />
+        <div className="final-art reveal" style={{ 
+          width: '100%', 
+          maxWidth: '800px', 
+          aspectRatio: '16/9', 
+          margin: '0 auto 40px', 
+          background: 'var(--surface)', 
+          border: '1px dashed var(--line)', 
+          borderRadius: '4px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden'
+        }}>
+          <img 
+            src="/brand/hackathon-collage.webp" 
+            alt="Hackathon Event Collage" 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextSibling.style.display = 'block';
+            }}
+          />
+          <span style={{ display: 'none', color: 'var(--muted)', fontSize: '0.8rem', letterSpacing: '0.1em' }}>
+            EVENT HIGHLIGHTS
+          </span>
+        </div>
         <div className="final-copy">
           <p className="eyebrow reveal">YOUR NEXT TEAMMATE IS IN THE QUEUE</p>
           <h2 className="reveal">Ready to meet<br />your missing piece?</h2>

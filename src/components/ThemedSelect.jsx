@@ -86,10 +86,10 @@ export default function ThemedSelect({ value, onChange, options, 'aria-label': a
           alignItems: 'center',
           width: '100%',
           padding: '12px 16px',
-          background: 'var(--paper)',
-          border: '1px solid var(--line)',
-          color: 'var(--ink)',
-          fontFamily: 'var(--font-sans)',
+          background: 'var(--ink-900)',
+          border: '1px solid var(--hairline-dark)',
+          color: 'var(--paper)',
+          fontFamily: 'var(--font-ui)',
           fontSize: '1rem',
           cursor: 'pointer',
           borderRadius: '2px',
@@ -98,7 +98,7 @@ export default function ThemedSelect({ value, onChange, options, 'aria-label': a
         }}
       >
         <span>{selectedOption ? selectedOption.label : ''}</span>
-        <span style={{ fontSize: '0.8rem', color: 'var(--ink-soft)' }}>â–¼</span>
+        <span style={{ fontSize: '0.8rem', color: 'var(--stone-500)' }}>â–¼</span>
       </div>
 
       {isOpen && (
@@ -113,8 +113,8 @@ export default function ThemedSelect({ value, onChange, options, 'aria-label': a
             width: '100%',
             maxHeight: '280px',
             overflowY: 'auto',
-            background: 'var(--ink)',
-            border: '1px solid var(--line)',
+            background: 'var(--ink-950)',
+            border: '1px solid var(--hairline-dark)',
             borderRadius: '4px',
             padding: '8px 0',
             margin: 0,
@@ -140,7 +140,7 @@ export default function ThemedSelect({ value, onChange, options, 'aria-label': a
                 style={{
                   padding: '10px 16px',
                   color: 'var(--paper)',
-                  fontFamily: 'var(--font-sans)',
+                  fontFamily: 'var(--font-ui)',
                   fontSize: '0.95rem',
                   cursor: 'pointer',
                   display: 'flex',

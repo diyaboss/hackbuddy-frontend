@@ -32,7 +32,7 @@ export default function TopBar({ user, onLogout }) {
       {user && (
         <div className="topbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {isNormalUser && onboardingComplete && (
-            <Link to="/setup" className="profile-chip">
+            <Link to="/profile" className="profile-chip">
               <span className="profile-avatar-circle">
                 {(user.email || 'H').charAt(0).toUpperCase()}
               </span>

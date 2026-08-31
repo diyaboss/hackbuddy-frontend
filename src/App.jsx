@@ -112,6 +112,10 @@ function App() {
           user.profile_complete ? <Navigate to="/discover" replace /> :
           requirePhone(<SetupForm user={user} setUser={setUser} showToast={showToast} />)
         } />
+
+        <Route path="/profile" element={
+          requireProfile(<SetupForm user={user} setUser={setUser} showToast={showToast} editMode={true} />)
+        } />
         
         <Route path="/discover" element={requireProfile(<DiscoverView user={user} setUser={setUser} showToast={showToast} />)} />
         <Route path="/requests" element={requireProfile(<RequestsView user={user} showToast={showToast} />)} />

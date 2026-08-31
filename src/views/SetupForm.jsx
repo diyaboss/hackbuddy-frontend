@@ -8,7 +8,7 @@ import ThemedSelect from '../components/ThemedSelect'
 
 const PREDEFINED_SKILLS = allSkills.slice(0, 9)
 
-export default function SetupForm({ user, setUser, showToast }) {
+export default function SetupForm({ user, setUser, showToast, editMode = false }) {
   const navigate = useNavigate()
   
   const [name, setName] = useState('')
@@ -372,7 +372,7 @@ export default function SetupForm({ user, setUser, showToast }) {
             <b>Team eligibility:</b> Review all hackathon rules before final submission.
           </p>
           <button className="primary-action" type="submit" disabled={saving}>
-            {saving ? 'SAVING...' : 'FIND MY PEOPLE →'}
+            {saving ? 'SAVING...' : (editMode ? 'SAVE CHANGES' : 'FIND MY PEOPLE →')}
           </button>
         </div>
       </form>
