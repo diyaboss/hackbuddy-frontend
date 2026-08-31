@@ -109,6 +109,7 @@ export default function DiscoverView({ user, setUser, showToast }) {
     if (swipeStartRef.current === null) return
     swipeStartRef.current = null
     const finalOffset = swipeOffsetRef.current
+    swipeOffsetRef.current = 0
 
     if (finalOffset > 110) {
       handleTeamUp()
@@ -116,7 +117,6 @@ export default function DiscoverView({ user, setUser, showToast }) {
       handleNext()
     } else {
       setSwipeOffset(0)
-      swipeOffsetRef.current = 0
     }
   }
 

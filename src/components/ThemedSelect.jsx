@@ -86,19 +86,20 @@ export default function ThemedSelect({ value, onChange, options, 'aria-label': a
           alignItems: 'center',
           width: '100%',
           padding: '12px 16px',
-          background: 'var(--ink-900)',
-          border: '1px solid var(--hairline-dark)',
+          background: 'var(--ink-soft)',
+          border: '1px solid var(--line)',
           color: 'var(--paper)',
           fontFamily: 'var(--font-ui)',
           fontSize: '1rem',
           cursor: 'pointer',
-          borderRadius: '2px',
+          borderRadius: '4px',
           outline: 'none',
-          minHeight: '48px'
+          minHeight: '48px',
+          boxShadow: isOpen ? '0 0 0 2px var(--accent)' : 'none'
         }}
       >
         <span>{selectedOption ? selectedOption.label : ''}</span>
-        <span style={{ fontSize: '0.8rem', color: 'var(--stone-500)' }}>â–¼</span>
+        <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>▼</span>
       </div>
 
       {isOpen && (
@@ -113,14 +114,14 @@ export default function ThemedSelect({ value, onChange, options, 'aria-label': a
             width: '100%',
             maxHeight: '280px',
             overflowY: 'auto',
-            background: 'var(--ink-950)',
-            border: '1px solid var(--hairline-dark)',
+            background: 'var(--ink)',
+            border: '1px solid var(--line)',
             borderRadius: '4px',
             padding: '8px 0',
             margin: 0,
             listStyle: 'none',
             zIndex: 100,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+            boxShadow: '0 8px 24px rgba(0,0,0,0.6)'
           }}
         >
           {options.map((opt, index) => {
@@ -153,7 +154,7 @@ export default function ThemedSelect({ value, onChange, options, 'aria-label': a
                 <span style={{ color: isSelected ? 'var(--accent)' : 'inherit', fontWeight: isSelected ? 'bold' : 'normal' }}>
                   {opt.label}
                 </span>
-                {isSelected && <span style={{ color: 'var(--accent)', fontSize: '0.8rem' }}>âœ“</span>}
+                {isSelected && <span style={{ color: 'var(--accent)', fontSize: '0.8rem' }}>✓</span>}
               </li>
             )
           })}

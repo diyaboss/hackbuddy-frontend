@@ -145,8 +145,12 @@ export default function SetupForm({ user, setUser, showToast, editMode = false }
       })
       const fresh = await authApi.me()
       setUser(fresh.user)
-      showToast('Profile saved')
-      navigate('/discover')
+      if (editMode) {
+        showToast('Profile updated')
+      } else {
+        showToast('Profile saved')
+        navigate('/discover')
+      }
     } catch (err) {
       showToast(err.message || 'Failed to save profile')
     } finally {
@@ -159,8 +163,8 @@ export default function SetupForm({ user, setUser, showToast, editMode = false }
   return (
     <section className="setup-screen">
       <div className="setup-heading">
-        <p className="eyebrow">01 / QUICK SETUP</p>
-        <h1>What do you<br />bring to the table?</h1>
+        <p className="eyebrow">{editMode ? 'YOUR PROFILE' : '01 / QUICK SETUP'}</p>
+        <h1>{editMode ? 'Update your details.' : 'What do you bring to the table?'}</h1>
       </div>
 
       <form className="setup-form" onSubmit={handleSubmit}>
@@ -348,19 +352,6 @@ export default function SetupForm({ user, setUser, showToast, editMode = false }
         </fieldset>
 
         <div className="field-row">
-          <label>
-            <span>Your hackathon animal</span>
-            <ThemedSelect
-              value="Raccoon"
-              onChange={() => {}}
-              options={[
-                { value: 'Raccoon', label: 'Raccoon' },
-                { value: 'Owl', label: 'Owl' },
-                { value: 'Black cat', label: 'Black cat' },
-                { value: 'Golden retriever', label: 'Golden retriever' }
-              ]}
-            />
-          </label>
           <label>
             <span>At 2:47 AM, when it breaks…</span>
             <input type="text" value={bio} onChange={e => setBio(e.target.value)} placeholder="I open the logs and pretend not to panic" />
