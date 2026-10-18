@@ -16,6 +16,7 @@ import { authApi } from './api/auth'
 function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [startupError, setStartupError] = useState('')
   const [toastMessage, setToastMessage] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
@@ -27,8 +28,8 @@ function App() {
           setUser(data.user)
         }
       })
-      .catch(() => {
-        // Not authenticated
+      .catch((error) => {
+        if (error.status !== 401) setStartupError(error.message || 'Unable to connect to HackBuddy.')
       })
       .finally(() => {
         setLoading(false)
@@ -51,7 +52,16 @@ function App() {
   }
 
   if (loading) {
-    return <div className="loading-screen">Loading HackBuddy...</div>
+    return <div className="loading-screen">Connecting to HackBuddy. This may take up to 20 seconds...</div>
+  }
+
+  if (startupError) {
+    return (
+      <div className="loading-screen" role="alert">
+        <p>{startupError}</p>
+        <button type="button" onClick={() => window.location.reload()}>Try again</button>
+      </div>
+    )
   }
 
   // Routing Guards
